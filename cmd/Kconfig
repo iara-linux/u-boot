@@ -1817,6 +1817,12 @@ config CMD_TEMPERATURE
 	help
 	  Provides a way to list thermal sensors and to get their readings.
 
+config CMD_TOUCH
+	bool "touch - Read input from touchpanel"
+	select DM_TOUCHPANEL
+	help
+	  Shows list of touches on the touch panel device.
+
 config CMD_UFS
 	bool "ufs - Universal Flash Storage commands"
 	depends on UFS
