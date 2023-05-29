@@ -124,3 +124,10 @@ config EDT_FT5X06_TOUCHPANEL
 	help
 	  This adds a support for EDT FT5x06 touch panels that can be used
 	  for controlling u-boot on tablets using touch input only.
+
+config GOODIX_TOUCHPANEL
+	bool "Enable Goodix touchpanel support"
+	depends on DM_TOUCHPANEL
+	help
+	  This adds a support for Goodix touch panels that can be used
+	  for controlling u-boot on tablets using touch input only.
