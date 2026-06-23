@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0-only OR MIT
+/*
+ * Copyright (c) 2025-2026 Ben Grisdale <bengris32@protonmail.ch>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+#include "mt8163-amazon-common.dtsi"
+
+/ {
+	model = "Amazon Echo Spot (2017)";
+	compatible = "amazon,rook", "mediatek,mt8163";
+	chassis-type = "embedded";
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		key-volume-up {
+			label = "Volume Up";
+			linux,code = <KEY_VOLUMEUP>;
+			gpios = <&pio 37 GPIO_ACTIVE_LOW>;
+		};
+
+		key-volume-down {
+			label = "Volume Down";
+			linux,code = <KEY_VOLUMEDOWN>;
+			gpios = <&pio 50 GPIO_ACTIVE_LOW>;
+		};
+	};
+};

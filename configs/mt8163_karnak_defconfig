@@ -1,0 +1,4 @@
+#include <configs/mt8163-amazon.config>
+CONFIG_ENV_SOURCE_FILE="env/karnak"
+CONFIG_DEFAULT_DEVICE_TREE="mt8163-amazon-karnak"
+CONFIG_OF_LIST="mt8163-amazon-karnak"

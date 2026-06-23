@@ -1,0 +1,294 @@
+// SPDX-License-Identifier: GPL-2.0-only OR MIT
+/*
+ * Copyright (c) 2025-2026 Ben Grisdale <bengris32@protonmail.ch>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/leds/common.h>
+
+#include "mt8163-amazon-common.dtsi"
+
+/ {
+	model = "Amazon Echo Dot (2016)";
+	compatible = "amazon,biscuit", "mediatek,mt8163";
+	chassis-type = "embedded";
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		key-volume-up {
+			label = "Volume Up";
+			linux,code = <KEY_VOLUMEUP>;
+			gpios = <&pio 37 GPIO_ACTIVE_LOW>;
+		};
+
+		key-volume-down {
+			label = "Volume Down";
+			linux,code = <KEY_VOLUMEDOWN>;
+			gpios = <&pio 50 GPIO_ACTIVE_LOW>;
+		};
+	};
+};
+
+&i2c0 {
+	clock-frequency = <100000>;
+	status = "okay";
+
+	led-controller@3f {
+		compatible = "issi,is31fl3236";
+		reg = <0x3f>;
+		enable-gpios = <&pio 29 GPIO_ACTIVE_HIGH>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		led@1 {
+			reg = <1>;
+			label = "ring:red:0";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@2 {
+			reg = <2>;
+			label = "ring:green:0";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@3 {
+			reg = <3>;
+			label = "ring:blue:0";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@4 {
+			reg = <4>;
+			label = "ring:red:1";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@5 {
+			reg = <5>;
+			label = "ring:green:1";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@6 {
+			reg = <6>;
+			label = "ring:blue:1";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@7 {
+			reg = <7>;
+			label = "ring:red:2";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@8 {
+			reg = <8>;
+			label = "ring:green:2";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@9 {
+			reg = <9>;
+			label = "ring:blue:2";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@10 {
+			reg = <10>;
+			label = "ring:red:3";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@11 {
+			reg = <11>;
+			label = "ring:green:3";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@12 {
+			reg = <12>;
+			label = "ring:blue:3";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@13 {
+			reg = <13>;
+			label = "ring:red:4";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@14 {
+			reg = <14>;
+			label = "ring:green:4";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@15 {
+			reg = <15>;
+			label = "ring:blue:4";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@16 {
+			reg = <16>;
+			label = "ring:red:5";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@17 {
+			reg = <17>;
+			label = "ring:green:5";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@18 {
+			reg = <18>;
+			label = "ring:blue:5";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@19 {
+			reg = <19>;
+			label = "ring:red:6";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@20 {
+			reg = <20>;
+			label = "ring:green:6";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@21 {
+			reg = <21>;
+			label = "ring:blue:6";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@22 {
+			reg = <22>;
+			label = "ring:red:7";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@23 {
+			reg = <23>;
+			label = "ring:green:7";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@24 {
+			reg = <24>;
+			label = "ring:blue:7";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@25 {
+			reg = <25>;
+			label = "ring:red:8";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@26 {
+			reg = <26>;
+			label = "ring:green:8";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@27 {
+			reg = <27>;
+			label = "ring:blue:8";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@28 {
+			reg = <28>;
+			label = "ring:red:9";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@29 {
+			reg = <29>;
+			label = "ring:green:9";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@30 {
+			reg = <30>;
+			label = "ring:blue:9";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@31 {
+			reg = <31>;
+			label = "ring:red:10";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@32 {
+			reg = <32>;
+			label = "ring:green:10";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@33 {
+			reg = <33>;
+			label = "ring:blue:10";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led@34 {
+			reg = <34>;
+			label = "ring:red:11";
+			color = <LED_COLOR_ID_RED>;
+		};
+
+		led@35 {
+			reg = <35>;
+			label = "ring:green:11";
+			color = <LED_COLOR_ID_GREEN>;
+		};
+
+		led@36 {
+			reg = <36>;
+			label = "ring:blue:11";
+			color = <LED_COLOR_ID_BLUE>;
+		};
+	};
+};
+
+&mt6323_vmch_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6323_vemc3v3_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6323_vgp1_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6323_vgp2_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6323_vcamaf_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};
+
+&mt6323_vibr_reg {
+	regulator-always-on;
+	regulator-boot-on;
+};

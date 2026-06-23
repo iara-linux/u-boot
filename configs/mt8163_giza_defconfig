@@ -1,0 +1,4 @@
+#include <configs/mt8163-amazon.config>
+CONFIG_ENV_SOURCE_FILE="env/giza"
+CONFIG_DEFAULT_DEVICE_TREE="mt8163-amazon-giza"
+CONFIG_OF_LIST="mt8163-amazon-giza"

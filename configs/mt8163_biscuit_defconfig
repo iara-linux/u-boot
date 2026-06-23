@@ -1,0 +1,7 @@
+#include <configs/mt8163-amazon.config>
+CONFIG_ENV_SOURCE_FILE="env/biscuit"
+CONFIG_DEFAULT_DEVICE_TREE="mt8163-amazon-biscuit"
+CONFIG_OF_LIST="mt8163-amazon-biscuit"
+CONFIG_LED=y
+CONFIG_LED_IS31FL3236=y
+CONFIG_CMD_LED=y

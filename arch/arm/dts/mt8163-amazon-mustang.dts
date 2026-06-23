@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-only OR MIT
+/*
+ * Copyright (c) 2025-2026 Ben Grisdale <bengris32@protonmail.ch>
+ */
+
+/dts-v1/;
+
+#include "mt8163-amazon-common.dtsi"
+
+/ {
+	model = "Amazon Fire 7 (2019)";
+	compatible = "amazon,mustang", "mediatek,mt8163";
+	chassis-type = "tablet";
+};

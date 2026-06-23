@@ -1,0 +1,168 @@
+// SPDX-License-Identifier: GPL-2.0-only OR MIT
+/*
+ * Copyright (c) 2025-2026 Ben Grisdale <bengris32@protonmail.ch>
+ */
+
+#include "mt8163.dtsi"
+#include "mt6323.dtsi"
+
+/ {
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0 0x40000000 0 0x20000000>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* 128 KiB reserved for ARM Trusted Firmware (BL31) */
+		bl31_secmon_reserved: secmon@43000000 {
+			reg = <0 0x43000000 0 0x30000>;
+			no-map;
+		};
+	};
+};
+
+&i2c0 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c0_pins>;
+};
+
+&i2c2 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c2_pins>;
+};
+
+&mmc0 {
+	pinctrl-names = "default", "state_uhs";
+	pinctrl-0 = <&mmc0_pins_default>;
+	pinctrl-1 = <&mmc0_pins_uhs>;
+	status = "okay";
+	bus-width = <8>;
+	mediatek,latch-ck = <1>;
+	max-frequency = <200000000>;
+	cap-mmc-highspeed;
+	mmc-hs200-1_8v;
+	cap-mmc-hw-reset;
+	vmmc-supply = <&mt6323_vemc3v3_reg>;
+	vqmmc-supply = <&mt6323_vio18_reg>;
+	assigned-clocks = <&topckgen CLK_TOP_MSDC30_0_SEL>;
+	assigned-clock-parents = <&topckgen CLK_TOP_MSDCPLL_D2>;
+	non-removable;
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
+	status = "okay";
+};
+
+&usb0 {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&u2phy0 {
+	status = "okay";
+};
+
+&pio {
+	i2c0_pins: i2c0-pins {
+		mux {
+			function = "i2c";
+			groups = "i2c0_sda_scl";
+		};
+
+		conf-sda-scl {
+			pins = "SDA0", "SCL0";
+			input-enable;
+			bias-disable;
+		};
+	};
+
+	i2c2_pins: i2c2-pins {
+		mux {
+			function = "i2c";
+			groups = "i2c2_sda_scl";
+		};
+
+		conf-sda-scl {
+			pins = "SDA2", "SCL2";
+			input-enable;
+			bias-disable;
+		};
+	};
+
+	mmc0_pins_default: mmc0default {
+		mux {
+			function = "msdc";
+			groups =  "msdc0";
+		};
+
+		conf-cmd-data {
+			pins = "MSDC0_CMD", "MSDC0_DAT0", "MSDC0_DAT1",
+			       "MSDC0_DAT2", "MSDC0_DAT3", "MSDC0_DAT4",
+			       "MSDC0_DAT5", "MSDC0_DAT6", "MSDC0_DAT7";
+			input-enable;
+			bias-pull-up;
+		};
+
+		conf-clk {
+			pins = "MSDC0_CLK";
+			bias-pull-down;
+		};
+
+		conf-rst {
+			pins = "MSDC0_RSTB";
+			bias-pull-up;
+		};
+	};
+
+	mmc0_pins_uhs: mmc0uhs {
+		mux {
+			function = "msdc";
+			groups =  "msdc0";
+		};
+
+		conf-cmd-data {
+			pins = "MSDC0_CMD", "MSDC0_DAT0", "MSDC0_DAT1",
+			       "MSDC0_DAT2", "MSDC0_DAT3", "MSDC0_DAT4",
+			       "MSDC0_DAT5", "MSDC0_DAT6", "MSDC0_DAT7";
+			input-enable;
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_01>;
+		};
+
+		conf-clk {
+			pins = "MSDC0_CLK";
+			drive-strength = <MTK_DRIVE_6mA>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_01>;
+		};
+
+		conf-rst {
+			pins = "MSDC0_RSTB";
+			bias-pull-up;
+		};
+	};
+
+	uart0_pins: uart0 {
+		mux {
+			function = "uart";
+			groups = "uart0_0_rxd_txd";
+		};
+	};
+};
