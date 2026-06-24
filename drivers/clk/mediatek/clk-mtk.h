@@ -32,6 +32,12 @@
 
 #define ETHSYS_HIFSYS_RST_CTRL_OFS	0x34
 
+#define REF2USB_TX_EN			BIT(0)
+#define REF2USB_TX_LPF_EN		BIT(1)
+#define REF2USB_TX_OUT_EN		BIT(2)
+#define REF2USB_EN_MASK			(REF2USB_TX_EN | REF2USB_TX_LPF_EN | \
+					 REF2USB_TX_OUT_EN)
+
 /* These get matched to CLK_PARENT_* when looking up parent clocks. */
 enum mtk_clk_tree_type {
 	MTK_CLK_TREE_NONE,
@@ -238,6 +244,28 @@ struct mtk_gate {
 		.flags = _flags,				\
 	}
 
+/**
+ * struct mtk_ref2usb_tx - ref2usb-tx clock
+ *
+ * @id:		unmapped ID of ref2usb-tx clocks
+ * @parent:	unmapped ID of parent clocks
+ * @reg_ofs:	hardware-specific register offset
+ * @flags:	hardware-specific flags
+ */
+struct mtk_ref2usb_tx {
+	const int id;
+	const int parent;
+	u32 reg_ofs;
+	u32 flags;
+};
+
+#define REF2USB_TX(_id, _parent, _reg, _flags) {	\
+		.id = _id,				\
+		.parent = _parent,			\
+		.reg_ofs = _reg,			\
+		.flags = _flags,			\
+	}
+
 /* struct mtk_clk_tree - clock tree */
 struct mtk_clk_tree {
 	const struct mtk_parent pll_parent;
@@ -259,11 +287,14 @@ struct mtk_clk_tree {
 	const int fdivs_offs;
 	const int muxes_offs;
 	const int gates_offs;
+	const int ref2usb_tx_offs;
 	const struct mtk_pll_data *plls;
 	const struct mtk_fixed_clk *fclks;
 	const struct mtk_fixed_factor *fdivs;
 	const struct mtk_composite *muxes;
 	const struct mtk_gate *gates;
+	/* NOTE: There will only ever be one ref2usb_tx clock. */
+	const struct mtk_ref2usb_tx *ref2usb_tx;
 	const int num_plls;
 	const int num_fclks;
 	const int num_fdivs;

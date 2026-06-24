@@ -196,6 +196,11 @@ static bool mtk_clk_id_is_gate(const struct mtk_clk_tree *tree, int mapped_id)
 	       mapped_id < tree->gates_offs + tree->num_gates;
 }
 
+static bool mtk_clk_id_is_ref2usb_tx(const struct mtk_clk_tree *tree, int mapped_id)
+{
+	return tree->ref2usb_tx && mapped_id == tree->ref2usb_tx_offs;
+}
+
 static int mtk_dummy_enable(struct clk *clk)
 {
 	return 0;
@@ -249,6 +254,33 @@ static int mtk_gate_disable(void __iomem *base, const struct mtk_gate *gate)
 	}
 
 	return 0;
+}
+
+static void mtk_ref2usb_tx_enable(void __iomem *base, const struct mtk_ref2usb_tx *tx)
+{
+	u32 r;
+
+	r = readl(base + tx->reg_ofs);
+
+	r |= REF2USB_TX_EN;
+	writel(r, base + tx->reg_ofs);
+	udelay(100);
+
+	r |= REF2USB_TX_LPF_EN;
+	writel(r, base + tx->reg_ofs);
+
+	r |= REF2USB_TX_OUT_EN;
+	writel(r, base + tx->reg_ofs);
+}
+
+static void mtk_ref2usb_tx_disable(void __iomem *base, const struct mtk_ref2usb_tx *tx)
+{
+	u32 r;
+
+	r = readl(base + tx->reg_ofs);
+
+	r &= ~REF2USB_EN_MASK;
+	writel(r, base + tx->reg_ofs);
 }
 
 static ulong mtk_ext_clock_get_rate(const struct mtk_clk_tree *tree, int id)
@@ -457,8 +489,10 @@ static const int mtk_apmixedsys_of_xlate(struct clk *clk,
 	if (ret)
 		return ret;
 
-	/* apmixedsys only uses plls and gates. */
-	if (!mtk_clk_id_is_pll(tree, clk->id) && !mtk_clk_id_is_gate(tree, clk->id))
+	/* apmixedsys uses plls, gates, and ref2usb-tx. */
+	if (!mtk_clk_id_is_pll(tree, clk->id) &&
+	    !mtk_clk_id_is_gate(tree, clk->id) &&
+	    !mtk_clk_id_is_ref2usb_tx(tree, clk->id))
 		return -ENOENT;
 
 	return 0;
@@ -601,6 +635,7 @@ static ulong mtk_apmixedsys_get_rate(struct clk *clk)
 	const struct mtk_parent *parent;
 	const struct mtk_pll_data *pll;
 	const struct mtk_gate *gate;
+	const struct mtk_ref2usb_tx *tx;
 	unsigned long xtal_rate;
 	u32 postdiv;
 	u32 pcw;
@@ -609,6 +644,12 @@ static ulong mtk_apmixedsys_get_rate(struct clk *clk)
 	if (mtk_clk_id_is_gate(priv->tree, clk->id)) {
 		gate = &priv->tree->gates[clk->id - priv->tree->gates_offs];
 		return mtk_find_parent_rate(priv, clk, gate->parent, gate->flags);
+	}
+
+	/* REF2USB-TX handling */
+	if (mtk_clk_id_is_ref2usb_tx(priv->tree, clk->id)) {
+		tx = priv->tree->ref2usb_tx;
+		return mtk_find_parent_rate(priv, clk, tx->parent, tx->flags);
 	}
 
 	parent = &priv->tree->pll_parent;
@@ -633,12 +674,20 @@ static int mtk_apmixedsys_enable(struct clk *clk)
 	struct mtk_clk_priv *priv = dev_get_priv(clk->dev);
 	const struct mtk_pll_data *pll;
 	const struct mtk_gate *gate;
+	const struct mtk_ref2usb_tx *tx;
 	u32 r;
 
 	/* GATE handling */
 	if (mtk_clk_id_is_gate(priv->tree, clk->id)) {
 		gate = &priv->tree->gates[clk->id - priv->tree->gates_offs];
 		return mtk_gate_enable(priv->base, gate);
+	}
+
+	/* REF2USB-TX handling */
+	if (mtk_clk_id_is_ref2usb_tx(priv->tree, clk->id)) {
+		tx = priv->tree->ref2usb_tx;
+		mtk_ref2usb_tx_enable(priv->base, tx);
+		return 0;
 	}
 
 	pll = &priv->tree->plls[clk->id];
@@ -671,12 +720,20 @@ static int mtk_apmixedsys_disable(struct clk *clk)
 	struct mtk_clk_priv *priv = dev_get_priv(clk->dev);
 	const struct mtk_pll_data *pll;
 	const struct mtk_gate *gate;
+	const struct mtk_ref2usb_tx *tx;
 	u32 r;
 
 	/* GATE handling */
 	if (mtk_clk_id_is_gate(priv->tree, clk->id)) {
 		gate = &priv->tree->gates[clk->id - priv->tree->gates_offs];
 		return mtk_gate_disable(priv->base, gate);
+	}
+
+	/* REF2USB-TX handling */
+	if (mtk_clk_id_is_ref2usb_tx(priv->tree, clk->id)) {
+		tx = priv->tree->ref2usb_tx;
+		mtk_ref2usb_tx_disable(priv->base, tx);
+		return 0;
 	}
 
 	pll = &priv->tree->plls[clk->id];
