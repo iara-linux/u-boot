@@ -473,16 +473,26 @@ static void menu_display_statusline(struct menu *m)
 {
 	struct bootmenu_entry *entry;
 	struct bootmenu_data *menu;
+	const char *title;
+	const char *help;
 
 	if (menu_default_choice(m, (void *)&entry) < 0)
 		return;
 
 	menu = entry->menu;
 
+	title = env_get("bootmenu_title");
+	if (!title)
+		title = "*** U-Boot Boot Menu ***";
+
+	help = env_get("bootmenu_help");
+	if (!help)
+		help = "Press UP/DOWN to move, ENTER to select, ESC to quit";
+
 	printf(ANSI_CURSOR_POSITION, 1, 1);
 	puts(ANSI_CLEAR_LINE);
 	printf(ANSI_CURSOR_POSITION, 2, 3);
-	puts("*** U-Boot Boot Menu ***");
+	puts(title);
 	puts(ANSI_CLEAR_LINE_TO_END);
 	printf(ANSI_CURSOR_POSITION, 3, 1);
 	puts(ANSI_CLEAR_LINE);
@@ -491,7 +501,7 @@ static void menu_display_statusline(struct menu *m)
 	printf(ANSI_CURSOR_POSITION, menu->count + 5, 1);
 	puts(ANSI_CLEAR_LINE);
 	printf(ANSI_CURSOR_POSITION, menu->count + 6, 3);
-	puts("Press UP/DOWN to move, ENTER to select, ESC to quit");
+	puts(help);
 	puts(ANSI_CLEAR_LINE_TO_END);
 	printf(ANSI_CURSOR_POSITION, menu->count + 7, 1);
 	puts(ANSI_CLEAR_LINE);
