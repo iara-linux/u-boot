@@ -20,6 +20,12 @@ config BUTTON_REMAP_PHONE_KEYS
 	  - Volume down: Down
 	  - Power: Enter
 
+config BUTTON_REMAP_SWAP_VOLUME_KEYS
+	bool "Swap volume keys"
+	depends on BUTTON_REMAP_PHONE_KEYS
+	help
+	  Swap volume up and volume down keys.
+
 config BUTTON_ADC
 	bool "Button adc"
 	depends on BUTTON

@@ -41,10 +41,17 @@ enum button_state_t button_get_state(struct udevice *dev)
 static int button_remap_phone_keys(int code)
 {
 	switch (code) {
+#ifdef CONFIG_BUTTON_REMAP_SWAP_VOLUME_KEYS
+	case KEY_VOLUMEUP:
+		return KEY_DOWN;
+	case KEY_VOLUMEDOWN:
+		return KEY_UP;
+#else
 	case KEY_VOLUMEUP:
 		return KEY_UP;
 	case KEY_VOLUMEDOWN:
 		return KEY_DOWN;
+#endif
 	case KEY_POWER:
 		return KEY_ENTER;
 	default:
