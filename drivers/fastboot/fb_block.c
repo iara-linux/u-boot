@@ -124,32 +124,82 @@ static lbaint_t fb_block_sparse_reserve(struct sparse_storage *info,
 	return blkcnt;
 }
 
+/**
+ * fastboot_block_get_dev() - Look up the block device to be flashed
+ *
+ * @response: Pointer to fastboot response buffer
+ * Return: Block device descriptor, or NULL if there is none
+ */
+static struct blk_desc *fastboot_block_get_dev(char *response)
+{
+	const char *interface = config_opt_enabled(CONFIG_FASTBOOT_FLASH_BLOCK,
+						   CONFIG_FASTBOOT_FLASH_BLOCK_INTERFACE_NAME,
+						   NULL);
+	const int device = config_opt_enabled(CONFIG_FASTBOOT_FLASH_BLOCK,
+					      CONFIG_FASTBOOT_FLASH_BLOCK_DEVICE_ID, -1);
+	struct blk_desc *dev_desc;
+
+	if (!interface || !strcmp(interface, "")) {
+		fastboot_fail("block interface isn't provided", response);
+		return NULL;
+	}
+
+	dev_desc = blk_get_dev(interface, device);
+	if (!dev_desc)
+		fastboot_fail("no such device", response);
+
+	return dev_desc;
+}
+
+/**
+ * fastboot_block_is_disk() - Check for the name standing for the whole device
+ *
+ * @part_name: Name given on the fastboot command line
+ * Return: true if the whole device is meant, rather than a partition of it
+ */
+static bool fastboot_block_is_disk(const char *part_name)
+{
+	const char *disk = config_opt_enabled(CONFIG_FASTBOOT_BLOCK_DISK_SUPPORT,
+					      CONFIG_FASTBOOT_BLOCK_DISK_NAME,
+					      NULL);
+
+	return disk && part_name && !strcmp(part_name, disk);
+}
+
+bool fastboot_block_has_partition(const char *part_name)
+{
+	struct disk_partition part_info;
+	struct blk_desc *dev_desc;
+	char response[FASTBOOT_RESPONSE_LEN] = { 0 };
+
+	if (fastboot_block_is_disk(part_name))
+		return true;
+
+	/*
+	 * Look the partition up with a response buffer of our own, as the
+	 * caller's must be left alone for whichever provider ends up handling
+	 * the partition. A found partition is reported by its index, which is
+	 * numbered from one, so only a negative result means it is not here.
+	 */
+	return fastboot_block_get_part_info(part_name, &dev_desc, &part_info,
+					    response) >= 0;
+}
+
 int fastboot_block_get_part_info(const char *part_name,
 				 struct blk_desc **dev_desc,
 				 struct disk_partition *part_info,
 				 char *response)
 {
 	int ret;
-	const char *interface = config_opt_enabled(CONFIG_FASTBOOT_FLASH_BLOCK,
-						   CONFIG_FASTBOOT_FLASH_BLOCK_INTERFACE_NAME,
-						   NULL);
-	const int device = config_opt_enabled(CONFIG_FASTBOOT_FLASH_BLOCK,
-					      CONFIG_FASTBOOT_FLASH_BLOCK_DEVICE_ID, -1);
 
 	if (!part_name || !strcmp(part_name, "")) {
 		fastboot_fail("partition not given", response);
 		return -ENOENT;
 	}
-	if (!interface || !strcmp(interface, "")) {
-		fastboot_fail("block interface isn't provided", response);
-		return -EINVAL;
-	}
 
-	*dev_desc = blk_get_dev(interface, device);
-	if (!dev_desc) {
-		fastboot_fail("no such device", response);
+	*dev_desc = fastboot_block_get_dev(response);
+	if (!*dev_desc)
 		return -ENODEV;
-	}
 
 	ret = part_get_info_by_name(*dev_desc, part_name, part_info);
 	if (ret < 0)
@@ -213,6 +263,14 @@ void fastboot_block_erase(const char *part_name, char *response)
 {
 	struct blk_desc *dev_desc;
 	struct disk_partition part_info;
+
+	if (fastboot_block_is_disk(part_name)) {
+		dev_desc = fastboot_block_get_dev(response);
+		if (dev_desc)
+			fastboot_block_raw_erase_disk(dev_desc, part_name,
+						      response);
+		return;
+	}
 
 	if (fastboot_block_get_part_info(part_name, &dev_desc, &part_info, response) < 0)
 		return;
@@ -314,10 +372,26 @@ void fastboot_block_flash_write(const char *part_name, void *download_buffer,
 				u32 download_bytes, char *response)
 {
 	struct blk_desc *dev_desc;
-	struct disk_partition part_info;
+	struct disk_partition part_info = {0};
 
-	if (fastboot_block_get_part_info(part_name, &dev_desc, &part_info, response) < 0)
+	if (fastboot_block_is_disk(part_name)) {
+		/*
+		 * Stand in a partition spanning the whole device, so that a
+		 * sparse image is written the same way as it would be to a
+		 * real one.
+		 */
+		dev_desc = fastboot_block_get_dev(response);
+		if (!dev_desc)
+			return;
+
+		strlcpy((char *)&part_info.name, part_name,
+			sizeof(part_info.name));
+		part_info.size = dev_desc->lba;
+		part_info.blksz = dev_desc->blksz;
+	} else if (fastboot_block_get_part_info(part_name, &dev_desc, &part_info,
+						response) < 0) {
 		return;
+	}
 
 	if (is_sparse_image(download_buffer)) {
 		fastboot_block_write_sparse_image(dev_desc, &part_info, part_name,

@@ -124,11 +124,20 @@ config FASTBOOT_FLASH_SPI
 	bool "FASTBOOT on SPI flash"
 	depends on DM_SPI_FLASH
 
+endchoice
+
 config FASTBOOT_FLASH_BLOCK
 	bool "FASTBOOT on block device"
-	depends on BLK
+	depends on FASTBOOT_FLASH && BLK
+	help
+	  Flash and erase the partitions of a block device.
 
-endchoice
+	  This can be used on its own, or together with one of the providers
+	  above. A partition is then only flashed here if it is found on the
+	  block device, and left to the other provider otherwise, so that a
+	  storage device holding a partition table of its own, such as one
+	  assembled with blkmap, can be flashed without losing access to the
+	  partitions it is stored in.
 
 config FASTBOOT_FLASH_MMC_DEV
 	int "Define FASTBOOT MMC FLASH default device"
@@ -224,6 +233,25 @@ config FASTBOOT_FLASH_BLOCK_DEVICE_ID
 	  identifier on the system, as a number.
 	  Device identifiers are numbered starting from 0 and the most
 	  common case is to use the first controller on the system.
+
+config FASTBOOT_BLOCK_DISK_SUPPORT
+	bool "Enable raw flash/erase of the whole block device"
+	depends on FASTBOOT_FLASH_BLOCK
+	help
+	  Define this to enable the "flash" and "erase" commands on the block
+	  device itself rather than on one of its partitions, so that a device
+	  carrying no partition table can still be written.
+	  This occurs when the specified "partition name" on the fastboot
+	  command line matches the value of FASTBOOT_BLOCK_DISK_NAME.
+
+config FASTBOOT_BLOCK_DISK_NAME
+	string "Target name for the whole block device"
+	depends on FASTBOOT_BLOCK_DISK_SUPPORT
+	default "blk0"
+	help
+	  The fastboot "flash" and "erase" commands write the whole block
+	  device when the name given on the command line matches the value
+	  defined here.
 
 config FASTBOOT_GPT_NAME
 	string "Target name for updating GPT"

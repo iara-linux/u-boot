@@ -24,6 +24,17 @@ int fastboot_block_get_part_info(const char *part_name,
 				 char *response);
 
 /**
+ * fastboot_block_has_partition() - Check for a partition on the block device
+ *
+ * Tells whether a partition should be flashed or erased here, or be left to
+ * another flash provider.
+ *
+ * @part_name: Named partition to look for
+ * Return: true if the partition is on the block device
+ */
+bool fastboot_block_has_partition(const char *part_name);
+
+/**
  * fastboot_block_raw_erase() - Erase raw block device partition
  *
  * @dev_desc: Block device we're going write to
