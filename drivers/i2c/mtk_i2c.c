@@ -230,6 +230,9 @@ struct mtk_i2c_priv {
 	bool auto_restart;		/* restart mode */
 	bool ignore_restart_irq;	/* ignore restart IRQ */
 	uint speed;			/* i2c speed, unit: hz */
+	uint timing_reg;		/* cached REG_TIMING, restored after reset */
+	uint high_speed_reg;		/* cached REG_HS, restored after reset */
+	uint ltiming_reg;		/* cached REG_LTIMING, restored after reset */
 };
 
 static inline void i2c_writel(struct mtk_i2c_priv *priv, uint reg, uint value)
@@ -317,6 +320,12 @@ static void mtk_i2c_init_hw(struct mtk_i2c_priv *priv)
 		control_reg |= I2C_CONTROL_DMAACK | I2C_CONTROL_ASYNC;
 	i2c_writel(priv, REG_CONTROL, control_reg);
 	i2c_writel(priv, REG_DELAY_LEN, I2C_DELAY_LEN);
+
+	i2c_writel(priv, REG_CLOCK_DIV, I2C_DEFAULT_CLK_DIV - 1);
+	i2c_writel(priv, REG_TIMING, priv->timing_reg);
+	i2c_writel(priv, REG_HS, priv->high_speed_reg);
+	if (priv->soc_data->ltiming_adjust)
+		i2c_writel(priv, REG_LTIMING, priv->ltiming_reg);
 }
 
 /*
@@ -433,6 +442,8 @@ static int mtk_i2c_set_speed(struct udevice *dev, uint speed)
 		return log_msg_ret("set_speed enable clk", -1);
 
 	clk_src = clk_get_rate(&priv->clk_main) / I2C_DEFAULT_CLK_DIV;
+	debug("i2c: main clk %lu Hz, clk_src %u Hz, target %u Hz\n",
+	      clk_get_rate(&priv->clk_main), clk_src, priv->speed);
 	i2c_writel(priv, REG_CLOCK_DIV, (I2C_DEFAULT_CLK_DIV - 1));
 	if (priv->speed > MAX_FS_MODE_SPEED) {
 		/* Set master code speed register */
@@ -442,6 +453,7 @@ static int mtk_i2c_set_speed(struct udevice *dev, uint speed)
 			goto exit;
 
 		timing_reg = (sample_cnt << TIMING_SAMPLE_OFFSET) | step_cnt;
+		priv->timing_reg = timing_reg;
 		i2c_writel(priv, REG_TIMING, timing_reg);
 		/* Set the high speed mode register */
 		ret = mtk_i2c_calculate_speed(clk_src, priv->speed,
@@ -452,10 +464,11 @@ static int mtk_i2c_set_speed(struct udevice *dev, uint speed)
 		high_speed_reg = I2C_TIME_DEFAULT_VALUE |
 				(sample_cnt << HS_SAMPLE_OFFSET) |
 				(step_cnt << HS_STEP_OFFSET);
+		priv->high_speed_reg = high_speed_reg;
 		i2c_writel(priv, REG_HS, high_speed_reg);
 		if (priv->soc_data->ltiming_adjust) {
-			timing_reg = (sample_cnt << 12) | (step_cnt << 9);
-			i2c_writel(priv, REG_LTIMING, timing_reg);
+			priv->ltiming_reg = (sample_cnt << 12) | (step_cnt << 9);
+			i2c_writel(priv, REG_LTIMING, priv->ltiming_reg);
 		}
 	} else {
 		ret = mtk_i2c_calculate_speed(clk_src, priv->speed,
@@ -466,11 +479,13 @@ static int mtk_i2c_set_speed(struct udevice *dev, uint speed)
 		timing_reg = (sample_cnt << TIMING_SAMPLE_OFFSET) | step_cnt;
 		/* Disable the high speed transaction */
 		high_speed_reg = I2C_TIME_CLR_VALUE;
+		priv->timing_reg = timing_reg;
+		priv->high_speed_reg = high_speed_reg;
 		i2c_writel(priv, REG_TIMING, timing_reg);
 		i2c_writel(priv, REG_HS, high_speed_reg);
 		if (priv->soc_data->ltiming_adjust) {
-			timing_reg = (sample_cnt << 6) | step_cnt;
-			i2c_writel(priv, REG_LTIMING, timing_reg);
+			priv->ltiming_reg = (sample_cnt << 6) | step_cnt;
+			i2c_writel(priv, REG_LTIMING, priv->ltiming_reg);
 		}
 	}
 
