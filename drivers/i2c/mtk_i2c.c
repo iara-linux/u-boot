@@ -306,6 +306,7 @@ static void mtk_i2c_init_hw(struct mtk_i2c_priv *priv)
 	uint control_reg;
 
 	writel(I2C_DMA_HARD_RST, priv->pdmabase + REG_RST);
+	udelay(50);
 	writel(I2C_DMA_CLR_FLAG, priv->pdmabase + REG_RST);
 	i2c_writel(priv, REG_SOFTRESET, I2C_SOFT_RST);
 	/* set ioconfig */
