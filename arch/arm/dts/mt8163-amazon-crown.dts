@@ -13,3 +13,61 @@
 	compatible = "amazon,crown", "mediatek,mt8163";
 	chassis-type = "embedded";
 };
+
+&dsi {
+	status = "okay";
+
+	panel: panel@0 {
+		compatible = "amazon,crown-jd936x-inx-wxga";
+		reg = <0>;
+		reset-gpios = <&pio 83 GPIO_ACTIVE_LOW>;
+		backlight = <&backlight_lcd0>;
+		vccio-supply = <&mt6323_vgp3_reg>;
+		vdd-supply = <&tps65132_outp>;
+		vdd2-supply = <&tps65132_outn>;
+		rot = <1>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+};
+
+&dsi_out {
+	remote-endpoint = <&panel_in>;
+};
+
+&i2c0 {
+	status = "okay";
+
+	regulator@3e {
+		compatible = "ti,tps65132";
+		reg = <0x3e>;
+
+		tps65132_outp: outp {
+			regulator-name = "outp";
+			regulator-min-microvolt = <5200000>;
+			regulator-max-microvolt = <5200000>;
+			regulator-min-microamp = <80000>;
+			regulator-max-microamp = <80000>;
+			regulator-active-discharge = <1>;
+			enable-gpios = <&pio 8 GPIO_ACTIVE_HIGH>;
+		};
+
+		tps65132_outn: outn {
+			regulator-name = "outn";
+			regulator-min-microvolt = <5200000>;
+			regulator-max-microvolt = <5200000>;
+			regulator-min-microamp = <80000>;
+			regulator-max-microamp = <80000>;
+			regulator-active-discharge = <1>;
+			enable-gpios = <&pio 9 GPIO_ACTIVE_HIGH>;
+		};
+	};
+};
+
+&mipi_tx0 {
+	status = "okay";
+};
