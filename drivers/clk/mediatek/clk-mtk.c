@@ -83,7 +83,7 @@ static struct udevice *mtk_clk_tree_get_provider(enum mtk_clk_tree_type type)
 				continue;
 
 			tree = (const void *)dev_get_driver_data(dev);
-			if (tree->type != type)
+			if (!tree || tree->type != type)
 				continue;
 
 			/* Probe will add it to mtk_clk_providers[type]. */
