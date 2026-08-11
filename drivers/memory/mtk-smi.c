@@ -188,8 +188,22 @@ static const struct mtk_smi_larb_gen mtk_smi_larb_mt6572 = {
 	.ostd = mtk_smi_larb_mt6572_ostd,
 };
 
+static int mtk_smi_larb_config_port_mt8173(struct udevice *dev)
+{
+	struct mtk_smi_larb *larb = dev_get_priv(dev);
+
+	writel(0, larb->base + MT8173_SMI_LARB_MMU_EN);
+
+	return 0;
+}
+
+static const struct mtk_smi_larb_gen mtk_smi_larb_mt8173 = {
+	.config_port = mtk_smi_larb_config_port_mt8173,
+};
+
 static const struct udevice_id mtk_smi_larb_of_ids[] = {
 	{.compatible = "mediatek,mt6572-smi-larb", .data = (ulong)&mtk_smi_larb_mt6572},
+	{.compatible = "mediatek,mt8173-smi-larb", .data = (ulong)&mtk_smi_larb_mt8173},
 	{}
 };
 
@@ -279,14 +293,21 @@ static int mtk_smi_common_probe(struct udevice *dev)
 			if (IS_ERR(common->base))
 				return PTR_ERR(common->base);
 			break;
-		case MTK_SMI_GEN1:
 		case MTK_SMI_GEN2:
+			common->base = dev_remap_addr_index(dev, 0);
+			if (IS_ERR(common->base))
+				return PTR_ERR(common->base);
+			break;
+		case MTK_SMI_GEN1:
 			return -EINVAL;
 	}
 
 	init = common->plat->init;
 	for (i = 0; i < SMI_COMMON_INIT_REGS_NR && init && init[i].offset; i++)
 		writel_relaxed(init[i].value, common->base + init[i].offset);
+
+	if (common->plat->type == MTK_SMI_GEN2 && common->plat->bus_sel)
+		writel(common->plat->bus_sel, common->base + SMI_BUS_SEL);
 
 	return 0;
 }
