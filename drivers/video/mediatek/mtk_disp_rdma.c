@@ -179,9 +179,15 @@ static const struct mtk_disp_rdma_data mt6572_rdma_driver_data = {
 	.broken_height = true,
 };
 
+static const struct mtk_disp_rdma_data mt8173_rdma_driver_data = {
+	.fifo_size = 8192,
+};
+
 static const struct udevice_id mtk_disp_rdma_driver_dt_match[] = {
 	{ .compatible = "mediatek,mt6572-disp-rdma",
 	  .data = (ulong)&mt6572_rdma_driver_data},
+	{ .compatible = "mediatek,mt8173-disp-rdma",
+	  .data = (ulong)&mt8173_rdma_driver_data},
 	{ }
 };
 
