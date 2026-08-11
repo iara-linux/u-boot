@@ -259,8 +259,20 @@ static const struct mtk_smi_common_plat mtk_smi_common_mt6572 = {
 	.init     = mtk_smi_common_mt6572_init,
 };
 
+static const struct mtk_smi_reg_pair mtk_smi_common_mt8163_init[SMI_COMMON_INIT_REGS_NR] = {
+	{SMI_L1_ARB, 0x1b},
+	{SMI_M4U_TH, 0xf7e19085},
+	{SMI_READ_FIFO_TH, 0x1d1f},
+};
+
+static const struct mtk_smi_common_plat mtk_smi_common_mt8163 = {
+	.type     = MTK_SMI_GEN2,
+	.init     = mtk_smi_common_mt8163_init,
+};
+
 static const struct udevice_id mtk_smi_common_of_ids[] = {
 	{.compatible = "mediatek,mt6572-smi-common", .data = (ulong)&mtk_smi_common_mt6572},
+	{.compatible = "mediatek,mt8163-smi-common", .data = (ulong)&mtk_smi_common_mt8163},
 	{}
 };
 
