@@ -261,8 +261,16 @@ static const struct mtk_disp_ovl_data mt6572_ovl_driver_data = {
 	.fmt_rgb565_is_0 = false,
 };
 
+static const struct mtk_disp_ovl_data mt8173_ovl_driver_data = {
+	.addr = DISP_REG_OVL_ADDR_MT8173,
+	.gmc_bits = 8,
+	.layer_nr = 4,
+	.fmt_rgb565_is_0 = true,
+};
+
 static const struct udevice_id mtk_disp_ovl_ids[] = {
 	{ .compatible = "mediatek,mt6572-disp-ovl", .data = (ulong)&mt6572_ovl_driver_data },
+	{ .compatible = "mediatek,mt8173-disp-ovl", .data = (ulong)&mt8173_ovl_driver_data },
 	{ }
 };
 
