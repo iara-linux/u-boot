@@ -17,6 +17,7 @@
 
 #include "mtk-mmsys.h"
 #include "mt6572-mmsys.h"
+#include "mt8163-mmsys.h"
 
 #define MMSYS_SW_RESET_PER_REG 32
 
@@ -26,6 +27,15 @@ static const struct mtk_mmsys_driver_data mt6572_mmsys_driver_data = {
 	.num_routes = ARRAY_SIZE(mt6572_mmsys_routing_table),
 	.sw0_rst_offset = MT6572_MMSYS_SW_RST_B,
 	.num_resets = 32,
+};
+
+static const struct mtk_mmsys_driver_data mt8163_mmsys_driver_data = {
+	.clk_driver = "mt8163-mm",
+	.routes = mt8163_mmsys_routing_table,
+	.num_routes = ARRAY_SIZE(mt8163_mmsys_routing_table),
+	.sw0_rst_offset = MT8163_MMSYS_SW0_RST_B,
+	.rst_tb = mmsys_mt8163_rst_tb,
+	.num_resets = ARRAY_SIZE(mmsys_mt8163_rst_tb),
 };
 
 struct mtk_mmsys {
@@ -185,6 +195,7 @@ const struct reset_ops mmsys_reset_ops = {
 
 static const struct udevice_id of_match_mtk_mmsys[] = {
 	{ .compatible = "mediatek,mt6572-mmsys", .data = (ulong)&mt6572_mmsys_driver_data },
+	{ .compatible = "mediatek,mt8163-mmsys", .data = (ulong)&mt8163_mmsys_driver_data },
 	{ /* sentinel */ }
 };
 
