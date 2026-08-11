@@ -1,4 +1,5 @@
-#include <configs/mt8163-amazon.config>
+#include <configs/mt8163-amazon-headed.config>
 CONFIG_ENV_SOURCE_FILE="env/checkers"
 CONFIG_DEFAULT_DEVICE_TREE="mt8163-amazon-checkers"
 CONFIG_OF_LIST="mt8163-amazon-checkers"
+CONFIG_VIDEO_LCD_AMAZON_ST7701S=y

@@ -1,4 +1,5 @@
-#include <configs/mt8163-amazon.config>
+#include <configs/mt8163-amazon-headed.config>
 CONFIG_ENV_SOURCE_FILE="env/cronos"
 CONFIG_DEFAULT_DEVICE_TREE="mt8163-amazon-cronos"
 CONFIG_OF_LIST="mt8163-amazon-cronos"
+CONFIG_VIDEO_LCD_AMAZON_ST7701S=y
