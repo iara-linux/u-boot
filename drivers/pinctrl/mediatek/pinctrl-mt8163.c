@@ -481,18 +481,31 @@ static const int mt8163_uart0_0_rxd_txd_funcs[]		= {  1,  1, };
 
 static const char *const mt8163_uart_groups[] = { "uart0_0_rxd_txd" };
 
+/* Display */
+static const int mt8163_disp_pwm_pins[]			= { 59, };
+static const int mt8163_disp_pwm_funcs[]		= {  1, };
+static const int mt8163_dsi_te_pins[]			= { 84, };
+static const int mt8163_dsi_te_funcs[]			= {  1, };
+
+static const char *const mt8163_disp_groups[] = {
+	"disp_pwm", "dsi_te"
+};
+
 /* Groups */
 static const struct mtk_group_desc mt8163_groups[] = {
 	PINCTRL_PIN_GROUP("uart0_0_rxd_txd", mt8163_uart0_0_rxd_txd),
 	PINCTRL_PIN_GROUP("i2c0_sda_scl", mt8163_i2c0_sda_scl),
 	PINCTRL_PIN_GROUP("i2c2_sda_scl", mt8163_i2c2_sda_scl),
 	PINCTRL_PIN_GROUP("msdc0", mt8163_msdc0),
+	PINCTRL_PIN_GROUP("disp_pwm", mt8163_disp_pwm),
+	PINCTRL_PIN_GROUP("dsi_te", mt8163_dsi_te),
 };
 
 static const struct mtk_function_desc mt8163_functions[] = {
 	{"uart", mt8163_uart_groups, ARRAY_SIZE(mt8163_uart_groups)},
 	{"msdc", mt8163_msdc_groups, ARRAY_SIZE(mt8163_msdc_groups)},
 	{"i2c", mt8163_i2c_groups, ARRAY_SIZE(mt8163_i2c_groups)},
+	{"disp", mt8163_disp_groups, ARRAY_SIZE(mt8163_disp_groups)},
 };
 
 static const struct mtk_io_type_desc mt8163_io_type_desc[] = {
