@@ -511,6 +511,14 @@ config SPL_DM_REGULATOR_LP873X
 	  features for REGULATOR LP873X and the family of LP873X PMICs.
 	  The driver implements get/set api for: value and enable in SPL.
 
+config DM_REGULATOR_TPS65132
+	bool "Enable driver for TPS65132 LCD bias supply regulators"
+	depends on PMIC_TPS65132
+	help
+	  This enables implementation of driver-model regulator uclass
+	  features for the positive and negative outputs of the TPS65132.
+	  The driver implements get/set api for: value and enable.
+
 config DM_REGULATOR_TPS65941
 	bool "Enable driver for TPS65941 PMIC regulators"
 	depends on PMIC_TPS65941

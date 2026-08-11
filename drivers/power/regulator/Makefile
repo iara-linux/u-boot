@@ -35,6 +35,7 @@ obj-$(CONFIG_REGULATOR_TPS65090) += tps65090_regulator.o
 obj-$(CONFIG_$(PHASE_)DM_REGULATOR_PALMAS) += palmas_regulator.o
 obj-$(CONFIG_$(PHASE_)DM_REGULATOR_PBIAS) += pbias_regulator.o
 obj-$(CONFIG_$(PHASE_)DM_REGULATOR_LP873X) += lp873x_regulator.o
+obj-$(CONFIG_$(PHASE_)DM_REGULATOR_TPS65132) += tps65132_regulator.o
 obj-$(CONFIG_$(PHASE_)DM_REGULATOR_LP87565) += lp87565_regulator.o
 obj-$(CONFIG_$(PHASE_)DM_REGULATOR_STM32_VREFBUF) += stm32-vrefbuf.o
 obj-$(CONFIG_DM_REGULATOR_TPS65910) += tps65910_regulator.o

@@ -466,6 +466,14 @@ config DM_PMIC_MTK_PWRAP
 
 endif
 
+config PMIC_TPS65132
+	bool "Enable driver for Texas Instruments TPS65132 LCD bias supply"
+	depends on DM_PMIC
+	help
+	  The TPS65132 is a dual output power supply providing the positive
+	  and negative rails a display panel needs. This driver binds the
+	  pmic children.
+
 config PMIC_TPS65217
 	bool "Enable driver for Texas Instruments TPS65217 PMIC"
 	help
