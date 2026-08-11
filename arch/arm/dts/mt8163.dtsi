@@ -8,6 +8,7 @@
 
 #include <dt-bindings/clock/mt8163-clk.h>
 #include <dt-bindings/pinctrl/mt65xx.h>
+#include <dt-bindings/power/mediatek,mt8163-power-controller.h>
 
 / {
 	#address-cells = <2>;
@@ -87,6 +88,75 @@
 		syscfg_pctl_a: syscon@10005000 {
 			compatible = "mediatek,mt8163-pctl-a-syscfg", "syscon";
 			reg = <0 0x10005000 0 0x1000>;
+		};
+
+		scpsys: syscon@10006000 {
+			compatible = "mediatek,mt8163-scpsys", "syscon", "simple-mfd";
+			reg = <0 0x10006000 0 0x1000>;
+
+			/* System Power Manager */
+			spm: power-controller {
+				compatible = "mediatek,mt8163-power-controller";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				#power-domain-cells = <1>;
+
+				/* power domains of the SoC */
+				power-domain@MT8163_POWER_DOMAIN_MM {
+					reg = <MT8163_POWER_DOMAIN_MM>;
+					clocks = <&topckgen CLK_TOP_MM_SEL>;
+					clock-names = "mm";
+					#power-domain-cells = <0>;
+					mediatek,infracfg = <&infracfg>;
+				};
+
+				power-domain@MT8163_POWER_DOMAIN_VDEC {
+					reg = <MT8163_POWER_DOMAIN_VDEC>;
+					clocks = <&topckgen CLK_TOP_MM_SEL>;
+					clock-names = "mm";
+					#power-domain-cells = <0>;
+				};
+
+				power-domain@MT8163_POWER_DOMAIN_VENC {
+					reg = <MT8163_POWER_DOMAIN_VENC>;
+					clocks = <&topckgen CLK_TOP_MM_SEL>;
+					clock-names = "mm";
+					#power-domain-cells = <0>;
+				};
+
+				power-domain@MT8163_POWER_DOMAIN_ISP {
+					reg = <MT8163_POWER_DOMAIN_ISP>;
+					clocks = <&topckgen CLK_TOP_MM_SEL>;
+					clock-names = "mm";
+					#power-domain-cells = <0>;
+				};
+
+				power-domain@MT8163_POWER_DOMAIN_CONN {
+					reg = <MT8163_POWER_DOMAIN_CONN>;
+					#power-domain-cells = <0>;
+					mediatek,infracfg = <&infracfg>;
+				};
+
+				power-domain@MT8163_POWER_DOMAIN_AUDIO {
+					reg = <MT8163_POWER_DOMAIN_AUDIO>;
+					#power-domain-cells = <0>;
+				};
+
+				power-domain@MT8163_POWER_DOMAIN_MFG_ASYNC {
+					reg = <MT8163_POWER_DOMAIN_MFG_ASYNC>;
+					clocks = <&topckgen CLK_TOP_MFG_SEL>;
+					clock-names = "mfg";
+					#address-cells = <1>;
+					#size-cells = <0>;
+					#power-domain-cells = <1>;
+					mediatek,infracfg = <&infracfg>;
+
+					power-domain@MT8163_POWER_DOMAIN_MFG {
+						reg = <MT8163_POWER_DOMAIN_MFG>;
+						#power-domain-cells = <0>;
+					};
+				};
+			};
 		};
 
 		watchdog: watchdog@10007000 {
