@@ -523,6 +523,16 @@ config VIDEO_LCD_AMAZON_ST7701S
 	  Several display modules ship behind the same board, each with its
 	  own compatible string.
 
+config VIDEO_LCD_AMAZON_JD936X
+	bool "Amazon JD936X DSI LCD panel support"
+	depends on PANEL
+	select VIDEO_MIPI_DSI
+	help
+	  Say Y here if you want to enable support for the JD936X and ILITEK
+	  based 800x1280 DSI video mode panels found on Amazon MT8163 devices.
+	  Several display modules ship behind the same board, each with its
+	  own compatible string.
+
 config VIDEO_LCD_ANX9804
 	bool "ANX9804 bridge chip"
 	help

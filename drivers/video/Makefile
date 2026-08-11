@@ -56,6 +56,7 @@ obj-$(CONFIG_VIDEO_DW_MIPI_DSI) += dw_mipi_dsi.o
 obj-$(CONFIG_VIDEO_EFI) += efi.o
 obj-y += imx/
 obj-$(CONFIG_VIDEO_IVYBRIDGE_IGD) += ivybridge_igd.o
+obj-$(CONFIG_VIDEO_LCD_AMAZON_JD936X) += amazon-jd936x.o
 obj-$(CONFIG_VIDEO_LCD_AMAZON_ST7701S) += amazon-st7701s.o
 obj-$(CONFIG_VIDEO_LCD_PANEL_EDP_4_LANE_1620M_VIA_ANX9804) += anx9804.o
 obj-$(CONFIG_VIDEO_LCD_ENDEAVORU) += endeavoru-panel.o
