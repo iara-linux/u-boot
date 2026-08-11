@@ -601,6 +601,89 @@ static const struct mtk_clk_tree mt8163_infracfg_tree = {
 };
 
 /* -------------------------------------------------------------------------
+ * MMSYS CLOCKS
+ * ------------------------------------------------------------------------- */
+static const struct mtk_gate_regs mm0_cg_regs = {
+	.set_ofs = 0x0104,
+	.clr_ofs = 0x0108,
+	.sta_ofs = 0x0100,
+};
+
+static const struct mtk_gate_regs mm1_cg_regs = {
+	.set_ofs = 0x0114,
+	.clr_ofs = 0x0118,
+	.sta_ofs = 0x0110,
+};
+
+#define GATE_MM0(_id, _parent, _shift)				\
+	{							\
+		.id = _id,					\
+		.parent = _parent,				\
+		.regs = &mm0_cg_regs,				\
+		.shift = _shift,				\
+		.flags = CLK_GATE_SETCLR | CLK_PARENT_TOPCKGEN,	\
+	}
+
+#define GATE_MM1(_id, _parent, _shift)				\
+	{							\
+		.id = _id,					\
+		.parent = _parent,				\
+		.regs = &mm1_cg_regs,				\
+		.shift = _shift,				\
+		.flags = CLK_GATE_SETCLR | CLK_PARENT_TOPCKGEN,	\
+	}
+
+static const struct mtk_gate mm_clks[] = {
+	/* MM0 */
+	GATE_MM0(CLK_MM_SMI_COMMON, CLK_TOP_MM_SEL, 0),
+	GATE_MM0(CLK_MM_SMI_LARB0, CLK_TOP_MM_SEL, 1),
+	GATE_MM0(CLK_MM_CAM_MDP, CLK_TOP_MM_SEL, 2),
+	GATE_MM0(CLK_MM_MDP_RDMA, CLK_TOP_MM_SEL, 3),
+	GATE_MM0(CLK_MM_MDP_RSZ0, CLK_TOP_MM_SEL, 4),
+	GATE_MM0(CLK_MM_MDP_RSZ1, CLK_TOP_MM_SEL, 5),
+	GATE_MM0(CLK_MM_MDP_TDSHP, CLK_TOP_MM_SEL, 6),
+	GATE_MM0(CLK_MM_MDP_WDMA, CLK_TOP_MM_SEL, 7),
+	GATE_MM0(CLK_MM_MDP_WROT, CLK_TOP_MM_SEL, 8),
+	GATE_MM0(CLK_MM_FAKE_ENG, CLK_TOP_MM_SEL, 9),
+	GATE_MM0(CLK_MM_DISP_OVL0, CLK_TOP_MM_SEL, 10),
+	GATE_MM0(CLK_MM_DISP_OVL1, CLK_TOP_MM_SEL, 11),
+	GATE_MM0(CLK_MM_DISP_RDMA0, CLK_TOP_MM_SEL, 12),
+	GATE_MM0(CLK_MM_DISP_RDMA1, CLK_TOP_MM_SEL, 13),
+	GATE_MM0(CLK_MM_DISP_WDMA0, CLK_TOP_RTC_SEL, 14),
+	GATE_MM0(CLK_MM_DISP_COLOR, CLK_TOP_MM_SEL, 15),
+	GATE_MM0(CLK_MM_DISP_CCORR, CLK_TOP_MM_SEL, 16),
+	GATE_MM0(CLK_MM_DISP_AAL, CLK_TOP_MM_SEL, 17),
+	GATE_MM0(CLK_MM_DISP_GAMMA, CLK_TOP_MM_SEL, 18),
+	GATE_MM0(CLK_MM_DISP_DITHER, CLK_TOP_MM_SEL, 19),
+	GATE_MM0(CLK_MM_DISP_UFOE, CLK_TOP_MM_SEL, 20),
+	GATE_MM0(CLK_MM_LARB4_AXI_ASIF_MM, CLK_TOP_MM_SEL, 21),
+	GATE_MM0(CLK_MM_LARB4_AXI_ASIF_MJC, CLK_TOP_MM_SEL, 22),
+	GATE_MM0(CLK_MM_DISP_WDMA1, CLK_TOP_MM_SEL, 23),
+	GATE_MM0(CLK_MM_UFOD_RDMA0_L0, CLK_TOP_MM_SEL, 24),
+	GATE_MM0(CLK_MM_UFOD_RDMA0_L1, CLK_TOP_MM_SEL, 25),
+	GATE_MM0(CLK_MM_UFOD_RDMA0_L2, CLK_TOP_MM_SEL, 26),
+	GATE_MM0(CLK_MM_UFOD_RDMA0_L3, CLK_TOP_MM_SEL, 27),
+	GATE_MM0(CLK_MM_UFOD_RDMA1_L0, CLK_TOP_MM_SEL, 28),
+	GATE_MM0(CLK_MM_UFOD_RDMA1_L1, CLK_TOP_MM_SEL, 29),
+	GATE_MM0(CLK_MM_UFOD_RDMA1_L2, CLK_TOP_MM_SEL, 30),
+	GATE_MM0(CLK_MM_UFOD_RDMA1_L3, CLK_TOP_MM_SEL, 31),
+
+	/* MM1 */
+	GATE_MM1(CLK_MM_DISP_PWM_MM, CLK_TOP_MM_SEL, 0),
+	GATE_MM1(CLK_MM_DISP_PWM_26M, CLK_TOP_PWM_SEL, 1),
+	GATE_MM1(CLK_MM_DSI_ENGINE, CLK_TOP_MM_SEL, 2),
+	GATE_MM1(CLK_MM_DSI_DIGITAL, CLK_TOP_DSI0_LNTC_DSICK, 3),
+};
+
+static const struct mtk_clk_tree mt8163_mmsys_tree = {
+	.type = MTK_CLK_TREE_NONE,
+	.ext_clk_rates = ext_clock_rates,
+	.num_ext_clks = ARRAY_SIZE(ext_clock_rates),
+	.gates = mm_clks,
+	.num_gates = ARRAY_SIZE(mm_clks),
+};
+
+/* -------------------------------------------------------------------------
  * PROBE / DRIVER IMPLEMENTATION
  * ------------------------------------------------------------------------- */
 static const struct udevice_id mt8163_apmixed_compat[] = {
@@ -655,4 +738,25 @@ U_BOOT_DRIVER(mtk_clk_infracfg) = {
 	.priv_auto = sizeof(struct mtk_clk_priv),
 	.ops = &mtk_clk_topckgen_ops,
 	.flags = DM_FLAG_PRE_RELOC,
+};
+
+static int mt8163_mmsys_clk_probe(struct udevice *dev)
+{
+	struct mtk_clk_priv *priv = dev_get_priv(dev);
+
+	priv->base = dev_read_addr_ptr(dev);
+	if (!priv->base)
+		return -ENOENT;
+
+	priv->tree = &mt8163_mmsys_tree;
+
+	return 0;
+}
+
+U_BOOT_DRIVER(mtk_clk_mmsys) = {
+	.name = "mt8163-mm",
+	.id = UCLASS_CLK,
+	.probe = mt8163_mmsys_clk_probe,
+	.priv_auto = sizeof(struct mtk_clk_priv),
+	.ops = &mtk_clk_topckgen_ops,
 };

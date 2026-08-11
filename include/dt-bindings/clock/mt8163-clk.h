@@ -207,4 +207,59 @@
 
 #define CLK_INFRA_NR_CLK            56
 
+/* --------------------------------------------------------------------- */
+/* MMSYS                                                                 */
+/* --------------------------------------------------------------------- */
+
+#define CLK_MM_SMI_COMMON           0
+#define CLK_MM_SMI_LARB0            1
+#define CLK_MM_CAM_MDP              2
+#define CLK_MM_MDP_RDMA             3
+#define CLK_MM_MDP_RSZ0             4
+#define CLK_MM_MDP_RSZ1             5
+#define CLK_MM_MDP_TDSHP            6
+#define CLK_MM_MDP_WDMA             7
+#define CLK_MM_MDP_WROT             8
+#define CLK_MM_FAKE_ENG             9
+#define CLK_MM_DISP_OVL0            10
+#define CLK_MM_DISP_OVL1            11
+#define CLK_MM_DISP_RDMA0           12
+#define CLK_MM_DISP_RDMA1           13
+#define CLK_MM_DISP_WDMA0           14
+#define CLK_MM_DISP_COLOR           15
+#define CLK_MM_DISP_CCORR           16
+#define CLK_MM_DISP_AAL             17
+#define CLK_MM_DISP_GAMMA           18
+#define CLK_MM_DISP_DITHER          19
+#define CLK_MM_DISP_UFOE            20
+#define CLK_MM_LARB4_AXI_ASIF_MM    21
+#define CLK_MM_LARB4_AXI_ASIF_MJC   22
+#define CLK_MM_DISP_WDMA1           23
+#define CLK_MM_UFOD_RDMA0_L0        24
+#define CLK_MM_UFOD_RDMA0_L1        25
+#define CLK_MM_UFOD_RDMA0_L2        26
+#define CLK_MM_UFOD_RDMA0_L3        27
+#define CLK_MM_UFOD_RDMA1_L0        28
+#define CLK_MM_UFOD_RDMA1_L1        29
+#define CLK_MM_UFOD_RDMA1_L2        30
+#define CLK_MM_UFOD_RDMA1_L3        31
+#define CLK_MM_DISP_PWM_MM          32
+#define CLK_MM_DISP_PWM_26M         33
+#define CLK_MM_DSI_ENGINE           34
+#define CLK_MM_DSI_DIGITAL          35
+#define CLK_MM_DPI0_PIXEL           36
+#define CLK_MM_DPI0_ENGINE          37
+#define CLK_MM_LVDS_PIXEL           38
+#define CLK_MM_LVDS_CTS             39
+#define CLK_MM_DPI1_PIXEL           40
+#define CLK_MM_DPI1_ENGINE          41
+#define CLK_MM_HDMI_PIXEL           42
+#define CLK_MM_HDMI_SPDIF           43
+#define CLK_MM_HDMI_ADSP            44
+#define CLK_MM_HDMI_PLLCK           45
+#define CLK_MM_DISP_DSC_ENGINE      46
+#define CLK_MM_DISP_DSC_MEM         47
+
+#define CLK_MM_NR_CLK               48
+
 #endif /* _DT_BINDINGS_CLK_MT8163_H */
