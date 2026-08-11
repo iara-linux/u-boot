@@ -7,6 +7,7 @@
 #include <generic-phy.h>
 #include <asm/io.h>
 #include <linux/delay.h>
+#include <linux/bitfield.h>
 #include <linux/bitops.h>
 
 #define MIPITX_DSI_CON		0x00
@@ -84,6 +85,7 @@
 
 #define MIPITX_DSI_PLL_TOP	0x64
 #define RG_DSI_MPPLL_PRESERVE		GENMASK(15, 8)
+#define RG_DSI_MPPLL_PRESERVE_MT8163	GENMASK(11, 7)
 
 #define MIPITX_DSI_PLL_PWR	0x68
 #define RG_DSI_MPPLL_SDM_PWR_ON		BIT(0)
@@ -121,10 +123,15 @@
 #define SW_LNT2_HSTX_PRE_OE		BIT(24)
 #define SW_LNT2_HSTX_OE			BIT(25)
 
+struct mtk_mipitx_data {
+	u32 mppll_preserve;
+	u32 mppll_preserve_bits;
+};
+
 struct mtk_mipi_tx {
 	void __iomem *regs;
 	ulong data_rate;
-	u32 mppll_preserve;
+	const struct mtk_mipitx_data *data;
 	struct clk clk;
 };
 
@@ -198,8 +205,9 @@ static int mtk_dsi_clk_enable(struct clk *clk)
 	udelay(20);
 
 	clrbits_le32(base + MIPITX_DSI_PLL_CON1, RG_DSI_MPPLL_SDM_SSC_EN);
-	clrsetbits_le32(base + MIPITX_DSI_PLL_TOP, RG_DSI_MPPLL_PRESERVE,
-			priv->mppll_preserve << 8);
+	clrsetbits_le32(base + MIPITX_DSI_PLL_TOP, priv->data->mppll_preserve_bits,
+			field_prep(priv->data->mppll_preserve_bits,
+				   priv->data->mppll_preserve));
 
 	return 0;
 }
@@ -210,7 +218,7 @@ static int mtk_dsi_clk_disable(struct clk *clk)
 	void __iomem *base = priv->regs;
 
 	clrbits_le32(base + MIPITX_DSI_PLL_CON0, RG_DSI_MPPLL_PLL_EN);
-	clrbits_le32(base + MIPITX_DSI_PLL_TOP, RG_DSI_MPPLL_PRESERVE);
+	clrbits_le32(base + MIPITX_DSI_PLL_TOP, priv->data->mppll_preserve_bits);
 	clrsetbits_le32(base + MIPITX_DSI_PLL_PWR,
 			RG_DSI_MPPLL_SDM_ISO_EN | RG_DSI_MPPLL_SDM_PWR_ON,
 			RG_DSI_MPPLL_SDM_ISO_EN);
@@ -284,7 +292,7 @@ static int mtk_mipi_tx_probe(struct udevice *dev)
 	if (!priv->regs)
 		return -EINVAL;
 
-	priv->mppll_preserve = (u32)dev_get_driver_data(dev);
+	priv->data = (const struct mtk_mipitx_data *)dev_get_driver_data(dev);
 
 
 	ret = device_get_child(dev, 0, &clk_dev);
@@ -296,8 +304,19 @@ static int mtk_mipi_tx_probe(struct udevice *dev)
 	return 0;
 }
 
+static const struct mtk_mipitx_data mt2701_mipitx_data = {
+	.mppll_preserve = 3,
+	.mppll_preserve_bits = RG_DSI_MPPLL_PRESERVE,
+};
+
+static const struct mtk_mipitx_data mt8163_mipitx_data = {
+	.mppll_preserve = 2,
+	.mppll_preserve_bits = RG_DSI_MPPLL_PRESERVE_MT8163,
+};
+
 static const struct udevice_id mtk_mipi_tx_ids[] = {
-	{ .compatible = "mediatek,mt2701-mipi-tx", .data = 3 },
+	{ .compatible = "mediatek,mt2701-mipi-tx", .data = (ulong)&mt2701_mipitx_data },
+	{ .compatible = "mediatek,mt8163-mipi-tx", .data = (ulong)&mt8163_mipitx_data },
 	{ }
 };
 
