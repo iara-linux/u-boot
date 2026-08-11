@@ -89,6 +89,23 @@
 // XXX: this is RDMA1, RDMA0 is MDP
 #define MT6572_MUTEX_MOD_DISP_RDMA0		10
 
+#define MT8163_MUTEX_MOD_DISP_OVL0		6
+#define MT8163_MUTEX_MOD_DISP_OVL1		7
+#define MT8163_MUTEX_MOD_DISP_RDMA0		8
+#define MT8163_MUTEX_MOD_DISP_RDMA1		9
+#define MT8163_MUTEX_MOD_DISP_WDMA0		10
+#define MT8163_MUTEX_MOD_DISP_COLOR0		11
+#define MT8163_MUTEX_MOD_DISP_CCORR		12
+#define MT8163_MUTEX_MOD_DISP_AAL		13
+#define MT8163_MUTEX_MOD_DISP_GAMMA		14
+#define MT8163_MUTEX_MOD_DISP_DITHER		15
+#define MT8163_MUTEX_MOD_DISP_UFOE		16
+#define MT8163_MUTEX_MOD_DISP_PWM0		17
+#define MT8163_MUTEX_MOD_DISP_WDMA1		18
+
+#define MT8163_MUTEX_SOF_DPI0			2
+#define MT8163_MUTEX_SOF_DPI1			3
+
 struct mtk_mutex {
 	u8 id;
 	bool claimed;
@@ -134,6 +151,22 @@ static const u8 mt6572_mutex_mod[DDP_COMPONENT_ID_MAX] = {
 	[DDP_COMPONENT_WDMA0] = MT6572_MUTEX_MOD_DISP_WDMA,
 };
 
+static const u8 mt8163_mutex_mod[DDP_COMPONENT_ID_MAX] = {
+	[DDP_COMPONENT_AAL0] = MT8163_MUTEX_MOD_DISP_AAL,
+	[DDP_COMPONENT_CCORR] = MT8163_MUTEX_MOD_DISP_CCORR,
+	[DDP_COMPONENT_COLOR0] = MT8163_MUTEX_MOD_DISP_COLOR0,
+	[DDP_COMPONENT_DITHER0] = MT8163_MUTEX_MOD_DISP_DITHER,
+	[DDP_COMPONENT_GAMMA] = MT8163_MUTEX_MOD_DISP_GAMMA,
+	[DDP_COMPONENT_OVL0] = MT8163_MUTEX_MOD_DISP_OVL0,
+	[DDP_COMPONENT_OVL1] = MT8163_MUTEX_MOD_DISP_OVL1,
+	[DDP_COMPONENT_PWM0] = MT8163_MUTEX_MOD_DISP_PWM0,
+	[DDP_COMPONENT_RDMA0] = MT8163_MUTEX_MOD_DISP_RDMA0,
+	[DDP_COMPONENT_RDMA1] = MT8163_MUTEX_MOD_DISP_RDMA1,
+	[DDP_COMPONENT_UFOE] = MT8163_MUTEX_MOD_DISP_UFOE,
+	[DDP_COMPONENT_WDMA0] = MT8163_MUTEX_MOD_DISP_WDMA0,
+	[DDP_COMPONENT_WDMA1] = MT8163_MUTEX_MOD_DISP_WDMA1,
+};
+
 static const u16 mt2712_mutex_sof[DDP_MUTEX_SOF_MAX] = {
 	[MUTEX_SOF_SINGLE_MODE] = MUTEX_SOF_SINGLE_MODE,
 	[MUTEX_SOF_DSI0] = MUTEX_SOF_DSI0,
@@ -144,11 +177,27 @@ static const u16 mt2712_mutex_sof[DDP_MUTEX_SOF_MAX] = {
 	[MUTEX_SOF_DSI3] = MUTEX_SOF_DSI3,
 };
 
+static const u16 mt8163_mutex_sof[DDP_MUTEX_SOF_MAX] = {
+	[MUTEX_SOF_SINGLE_MODE] = MUTEX_SOF_SINGLE_MODE,
+	[MUTEX_SOF_DSI0] = MUTEX_SOF_DSI0,
+	[MUTEX_SOF_DPI0] = MT8163_MUTEX_SOF_DPI0,
+	[MUTEX_SOF_DPI1] = MT8163_MUTEX_SOF_DPI1,
+};
+
 static const struct mtk_mutex_data mt6572_mutex_driver_data = {
 	.mutex_mod = mt6572_mutex_mod,
 	.mutex_sof = mt2712_mutex_sof,
 	.mutex_mod_reg = MT2701_MUTEX0_MOD0,
 	.mutex_sof_reg = MT2701_MUTEX0_SOF0,
+};
+
+static const struct mtk_mutex_data mt8163_mutex_driver_data = {
+	.mutex_mod = mt8163_mutex_mod,
+	.mutex_sof = mt8163_mutex_sof,
+	.mutex_mod_reg = MT2701_MUTEX0_MOD0,
+	.mutex_mod1_reg = MT2701_MUTEX0_MOD1,
+	.mutex_sof_reg = MT2701_MUTEX0_SOF0,
+	.no_clk = true,
 };
 
 struct mtk_mutex *mtk_mutex_get(struct udevice *dev)
@@ -377,6 +426,9 @@ static int mtk_mutex_probe(struct udevice *dev)
 	for (i = 0; i < MTK_MUTEX_MAX_HANDLES; i++)
 		mtx->mutex[i].id = i;
 
+	if (mtx->data->no_clk)
+		return 0;
+
 	ret = clk_get_by_index(dev, 0, &mtx->clk);
 	if (ret)
 		return ret;
@@ -390,6 +442,7 @@ static int mtk_mutex_probe(struct udevice *dev)
 
 static const struct udevice_id mutex_driver_dt_match[] = {
 	{ .compatible = "mediatek,mt6572-disp-mutex", .data = (ulong)&mt6572_mutex_driver_data },
+	{ .compatible = "mediatek,mt8163-disp-mutex", .data = (ulong)&mt8163_mutex_driver_data },
 	{ /* sentinel */ },
 };
 
