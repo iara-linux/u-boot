@@ -10,6 +10,12 @@
 #include "mt8163-amazon-common.dtsi"
 
 / {
+	backlight_lcd0: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&pwm0 0 500000>;
+		default-brightness-level = <128>;
+	};
+
 	gpio-keys {
 		compatible = "gpio-keys";
 
@@ -31,4 +37,25 @@
 			gpios = <&pio 47 GPIO_ACTIVE_HIGH>;
 		};
 	};
+};
+
+&pio {
+	backlight_pwm_pins: backlight-pwm-pins {
+		mux {
+			function = "disp";
+			groups = "disp_pwm";
+		};
+	};
+};
+
+&pwm0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&backlight_pwm_pins>;
+	status = "okay";
+};
+
+/* Display IOVCC */
+&mt6323_vgp3_reg {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
 };

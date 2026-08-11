@@ -13,3 +13,31 @@
 	compatible = "amazon,cronos", "mediatek,mt8163";
 	chassis-type = "embedded";
 };
+
+&dsi {
+	status = "okay";
+
+	panel: panel@0 {
+		compatible = "amazon,cronos-st7701s-kd-hsd-wsvga";
+		reg = <0>;
+		reset-gpios = <&pio 83 GPIO_ACTIVE_HIGH>;
+		backlight = <&backlight_lcd0>;
+		VCC-supply = <&mt6323_vio28_reg>;
+		IOVCC-supply = <&mt6323_vgp3_reg>;
+		rot = <1>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+};
+
+&dsi_out {
+	remote-endpoint = <&panel_in>;
+};
+
+&mipi_tx0 {
+	status = "okay";
+};
