@@ -3,6 +3,7 @@
 #include <dm/device_compat.h>
 #include <dm/ofnode_graph.h>
 #include <dm/platdata.h>
+#include <dm/read.h>
 #include <dm/uclass.h>
 #include <panel.h>
 #include <reset.h>
@@ -200,6 +201,7 @@ static int mtk_video_probe(struct udevice *dev)
 
 	uc_priv->xsize = timing.hactive.typ;
 	uc_priv->ysize = timing.vactive.typ;
+	uc_priv->rot = dev_read_u32_default(panel, "rot", 0);
 
 	mtx = mtk_mutex_get(mutex);
 	for (i = 0; i < route_count - 1; i++) {
