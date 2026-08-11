@@ -16,6 +16,7 @@ obj-$(CONFIG_MESON_GX_VPU_POWER_DOMAIN) += meson-gx-pwrc-vpu.o
 obj-$(CONFIG_MESON_SECURE_POWER_DOMAIN) += meson-secure-pwrc.o
 obj-$(CONFIG_MT2701_POWER_DOMAIN) += mt2701-power-domain.o
 obj-$(CONFIG_MT7622_POWER_DOMAIN) += mt7622-power-domain.o
+obj-$(CONFIG_MT8163_POWER_DOMAIN) += mt8163-power-domain.o
 obj-$(CONFIG_MT8188_POWER_DOMAIN) += mt8188-power-domain.o
 obj-$(CONFIG_MTK_POWER_DOMAIN) += mtk-power-domain.o
 obj-$(CONFIG_QCOM_RPMH_POWER_DOMAIN) += qcom-rpmhpd.o

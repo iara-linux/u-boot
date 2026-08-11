@@ -21,13 +21,16 @@ struct udevice;
 #define SPM_EN			(0xb16 << 16 | 0x1)
 #define SPM_VDE_PWR_CON		0x0210
 #define SPM_MFG_PWR_CON		0x0214
+#define SPM_VEN_PWR_CON		0x0230
 #define SPM_ISP_PWR_CON		0x0238
 #define SPM_DIS_PWR_CON		0x023c
 #define SPM_CONN_PWR_CON	0x0280
+#define SPM_AUDIO_PWR_CON	0x029c
 #define SPM_BDP_PWR_CON		0x029c
 #define SPM_ETH_PWR_CON		0x02a0
 #define SPM_HIF_PWR_CON		0x02a4
 #define SPM_IFR_MSC_PWR_CON	0x02a8
+#define SPM_MFG_ASYNC_PWR_CON	0x02c4
 #define SPM_ETHSYS_PWR_CON	0x2e0
 #define SPM_HIF0_PWR_CON	0x2e4
 #define SPM_HIF1_PWR_CON	0x2e8
@@ -49,6 +52,9 @@ struct udevice;
 #define PWR_STATUS_ETH		BIT(15)
 #define PWR_STATUS_HIF		BIT(16)
 #define PWR_STATUS_IFR_MSC	BIT(17)
+#define PWR_STATUS_VENC		BIT(21)
+#define PWR_STATUS_MFG_ASYNC	BIT(23)
+#define PWR_STATUS_AUDIO	BIT(24)
 #define PWR_STATUS_ETHSYS	BIT(24)
 #define PWR_STATUS_HIF0		BIT(25)
 #define PWR_STATUS_HIF1		BIT(26)
