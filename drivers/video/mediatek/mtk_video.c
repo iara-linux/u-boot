@@ -93,6 +93,7 @@ static const struct mtk_ddp_match mtk_ddp_matches[] = {
 	{ "mediatek,mt8163-disp-gamma",	UCLASS_MISC, DDP_COMPONENT_GAMMA, &ddp_gamma },
 	{ "mediatek,mt8183-disp-dither",UCLASS_MISC, DDP_COMPONENT_DITHER0, &ddp_dither },
 	{ "mediatek,mt8173-disp-ufoe",	UCLASS_MISC, DDP_COMPONENT_UFOE, &ddp_ufoe },
+	{ "mediatek,mt8163-dsi",	UCLASS_DSI_HOST,DDP_COMPONENT_DSI0, &ddp_dsi },
 };
 
 static const struct mtk_ddp_match *mtk_disp_find_match(ofnode node)

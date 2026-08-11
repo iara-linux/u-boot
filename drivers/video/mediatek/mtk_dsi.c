@@ -91,6 +91,7 @@
 
 #define DSI_RACK		0x84
 #define RACK				BIT(0)
+#define RACK_BYPASS			BIT(1)
 
 #define DSI_PHY_LCCON		0x104
 #define LC_HS_TX_EN			BIT(0)
@@ -178,6 +179,8 @@ struct mtk_dsi_driver_data {
 	bool has_size_ctl;
 	bool cmdq_long_packet_ctl;
 	bool support_per_frame_lp;
+	bool bypass_rack;
+	bool no_vm_done_irq;
 };
 
 struct mtk_dsi {
@@ -491,9 +494,15 @@ static void mtk_dsi_set_cmd_mode(struct mtk_dsi *dsi)
 
 static void mtk_dsi_set_interrupt_enable(struct mtk_dsi *dsi)
 {
-	u32 inten = LPRX_RD_RDY_INT_FLAG | CMD_DONE_INT_FLAG | VM_DONE_INT_FLAG;
+	u32 inten = LPRX_RD_RDY_INT_FLAG | CMD_DONE_INT_FLAG;
+
+	if (!dsi->driver_data->no_vm_done_irq)
+		inten |= VM_DONE_INT_FLAG;
 
 	writel(inten, dsi->regs + DSI_INTEN);
+
+	if (dsi->driver_data->bypass_rack)
+		writel(RACK_BYPASS, dsi->regs + DSI_RACK);
 }
 
 static s32 mtk_dsi_wait_for_irq_done(struct mtk_dsi *dsi, u32 irq_flag,
@@ -511,10 +520,12 @@ static s32 mtk_dsi_wait_for_irq_done(struct mtk_dsi *dsi, u32 irq_flag,
 		return ret;
 	}
 
-	do {
-		mtk_dsi_mask(dsi, DSI_RACK, RACK, RACK);
-		tmp = readl(dsi->regs + DSI_INTSTA);
-	} while (tmp & DSI_BUSY);
+	if (!dsi->driver_data->bypass_rack) {
+		do {
+			mtk_dsi_mask(dsi, DSI_RACK, RACK, RACK);
+			tmp = readl(dsi->regs + DSI_INTSTA);
+		} while (tmp & DSI_BUSY);
+	}
 
 	mtk_dsi_mask(dsi, DSI_INTSTA, status & irq_flag, 0);
 	return 0;
@@ -898,8 +909,18 @@ static const struct mtk_dsi_driver_data mt6572_dsi_driver_data = {
 	.has_size_ctl = false,
 };
 
+static const struct mtk_dsi_driver_data mt8163_dsi_driver_data = {
+	.reg_cmdq_off = 0x200,
+	.reg_vm_cmd_off = 0x130,
+	.has_shadow_ctl = false,
+	.has_size_ctl = false,
+	.bypass_rack = true,
+	.no_vm_done_irq = true,
+};
+
 static const struct udevice_id mtk_dsi_of_match[] = {
 	{ .compatible = "mediatek,mt6572-dsi", .data = (ulong)&mt6572_dsi_driver_data },
+	{ .compatible = "mediatek,mt8163-dsi", .data = (ulong)&mt8163_dsi_driver_data },
 	{ /* sentinel */ }
 };
 
