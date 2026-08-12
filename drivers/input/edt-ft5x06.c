@@ -9,7 +9,6 @@
  * Lothar Waßmann <LW@KARO-electronics.de> (DT support)
  */
 
-#include <common.h>
 #include <dm.h>
 #include <dm/device_compat.h>
 #include <linux/delay.h>
@@ -516,6 +515,12 @@ static int ft5x06_probe(struct udevice *dev)
 	}
 
 	if (dm_gpio_is_valid(&priv->reset_gpio)) {
+		ret = dm_gpio_set_value(&priv->reset_gpio, 1);
+		if (ret)
+			return ret;
+
+		udelay(20 * 1000);
+
 		ret = dm_gpio_set_value(&priv->reset_gpio, 0);
 		if (ret)
 			return ret;
