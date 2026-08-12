@@ -68,6 +68,21 @@
 	};
 };
 
+&i2c2 {
+	status = "okay";
+
+	touchscreen@38 {
+		compatible = "edt,edt-ft5x06";
+		reg = <0x38>;
+		reset-gpios = <&pio 123 GPIO_ACTIVE_LOW>;
+		power-supply = <&mt6323_vmch_reg>;
+		touchscreen-size-x = <1280>;
+		touchscreen-size-y = <800>;
+		touchscreen-inverted-y;
+		touchscreen-swapped-x-y;
+	};
+};
+
 &mipi_tx0 {
 	status = "okay";
 };
