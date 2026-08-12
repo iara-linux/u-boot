@@ -541,13 +541,13 @@ static int ft5x06_probe(struct udevice *dev)
 	debug("Model \"%s\", Rev. \"%s\", %dx%d sensors\n",
 		priv->name, fw_version, priv->num_x, priv->num_y);
 
-	if (priv->version == EDT_M06 ||
-	    priv->version == EDT_M09 ||
-	    priv->version == EDT_M12) {
+	if ((uc_priv->size_x == -ENODATA
+	    || uc_priv->size_y == -ENODATA) &&
+	    (priv->version == EDT_M06 ||
+	     priv->version == EDT_M09 ||
+	     priv->version == EDT_M12)) {
 		uc_priv->size_x = priv->num_x * 64;
 		uc_priv->size_y = priv->num_y * 64;
-	} else {
-		//XXX: perhaps check that the user set the values in DT
 	}
 
 	debug("%s: ready\n", __func__);
