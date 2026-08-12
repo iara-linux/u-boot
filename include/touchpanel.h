@@ -4,11 +4,24 @@
 /**
  * struct touchpanel_priv - information about a touchpanel, for the uclass
  *
- * @sdev:	stdio device
+ * @size_x:	horizontal resolution as seen by users of this uclass, that is
+ *		after the orientation below has been applied
+ * @size_y:	vertical resolution as seen by users of this uclass
+ * @max_x:	largest x the digitizer itself reports, -ENODATA if unknown
+ * @max_y:	largest y the digitizer itself reports, -ENODATA if unknown
+ * @inverted_x:	report x mirrored about the centre of the panel
+ * @inverted_y:	report y mirrored about the centre of the panel
+ * @swapped_x_y: report x and y the other way round, for a digitizer that is
+ *		mounted at right angles to the display
  */
 struct touchpanel_priv {
 	int size_x;
 	int size_y;
+	int max_x;
+	int max_y;
+	bool inverted_x;
+	bool inverted_y;
+	bool swapped_x_y;
 };
 
 struct touchpanel_touch {
