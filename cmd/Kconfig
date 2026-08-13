@@ -1397,6 +1397,34 @@ config CMD_IOTRACE
 	  might be useful to enhance tracing to only checksum the accesses and
 	  not the data read/written.
 
+config CMD_IDME
+	bool "idme - Support for accessing Amazon IDME data"
+	depends on MMC && BLK
+	select IDMELIB
+	help
+	  Enable command to access the IDME data on Amazon devices, which
+	  contains device information such as the serial number, board id,
+	  etc.
+
+	  IDME usually lives in one of the boot areas of the eMMC, or a
+	  dedicated partition on the NAND. Currently, only MMC is supported.
+
+if CMD_IDME
+config CMD_IDME_MMC_DEV
+	int "idme - MMC device"
+	default 0
+	help
+	  Which MMC device has the IDME data.
+
+config CMD_IDME_MMC_HWPART
+	int "idme - MMC hardware partition"
+	default 2
+	help
+	  Which eMMC hardware partition the IDME data lives in.
+
+	  Usually, the IDME lives in the second boot area.
+endif
+
 config CMD_I2C
 	bool "i2c"
 	depends on DM_I2C || SYS_I2C_LEGACY
