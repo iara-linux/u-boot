@@ -91,7 +91,7 @@ static int allocate_lmb_buffers(void)
 static void set_device_info(void)
 {
 	ofnode root = ofnode_root();
-	const char *dev_compatible;
+	const char *dev_compatible, *model;
 	char *ptr;
 	char buf[128];
 	char manufacturer[64];
@@ -113,6 +113,15 @@ static void set_device_info(void)
 		return;
 	}
 
+	ret = ofnode_read_string_index(root, "model", 0,
+					   &model);
+	if (ret) {
+		log_warning("%s: failed to read device model\n",
+				__func__);
+		return;
+	}
+	env_set("model", model);
+
 	/* <manufacturer>,<codename> => board = <manufacturer>-<codename> */
 	strlcpy(manufacturer, dev_compatible, sizeof(manufacturer) - 1);
 	ptr = strchr(manufacturer, ',');
@@ -132,9 +141,6 @@ static void set_device_info(void)
 	snprintf(buf, sizeof(buf), "mediatek/mt8163-%s-%s.dtb", 
 			 manufacturer, dev_compatible);
 	env_set("fdtfile", buf);
-
-	/* Set a temporary serial# for fastboot. */
-	env_set("serial#", "SAUPKADCBUIG-AUNTUSEE");
 }
 #endif
 
