@@ -89,6 +89,11 @@ config HAVE_ARCH_IOMAP
 	  Enable this option if architecture provides io{read,write}{8,16,32}
 	  I/O accessor functions.
 
+config IDMELIB
+	bool
+	help
+	  idmelib provides API to parse information from Amazon IDME block.
+
 config HAVE_PRIVATE_LIBGCC
 	bool
 
