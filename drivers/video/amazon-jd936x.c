@@ -5,6 +5,7 @@
 
 #include <backlight.h>
 #include <dm.h>
+#include <env.h>
 #include <log.h>
 #include <mipi_dsi.h>
 #include <panel.h>
@@ -32,6 +33,25 @@ struct jd936x_panel_desc {
 	unsigned int init_len;
 	const struct display_timing *timing;
 	unsigned long mode_flags;
+};
+
+#define JD936X_ID_CMD			0xda
+
+#define JD936X_ID_INX			0x01
+#define JD936X_ID_KD_INX		0x02
+#define JD936X_ID_KD_HSD		0x03
+#define JD936X_ID_BOE			0x04
+#define JD936X_ID_ILITEK_HSD		0x05
+#define JD936X_ID_ILITEK_BOE		0x10
+#define JD936X_ID_PROTO_INX		0x47
+#define JD936X_ID_PROTO_KD_HSD		0x60
+#define JD936X_ID_PROTO_KD_INX		0xe0
+#define JD936X_ID_UNKNOWN		0xff
+
+struct jd936x_variant {
+	u8 id;
+	const char *compatible;
+	const struct jd936x_panel_desc *desc;
 };
 
 struct jd936x_priv {
@@ -2089,6 +2109,27 @@ JD936X_DESC(ili9881_crown_hsd, ili9881_crown_hsd_timing,
 JD936X_DESC(ili9881_crown_boe, ili9881_crown_boe_timing,
 	    JD936X_MODE_FLAGS);
 
+static const struct jd936x_variant jd936x_variants[] = {
+	{ JD936X_ID_INX, "amazon,crown-jd936x-inx-wxga",
+	  &jd936x_crown_inx_desc },
+	{ JD936X_ID_KD_INX, "amazon,crown-jd936x-kd-inx-wxga",
+	  &jd936x_crown_kd_inx_desc },
+	{ JD936X_ID_KD_HSD, "amazon,crown-jd936x-kd-hsd-wxga",
+	  &jd936x_crown_kd_hsd_desc },
+	{ JD936X_ID_BOE, "amazon,crown-jd936x-boe-wxga",
+	  &jd936x_crown_boe_desc },
+	{ JD936X_ID_ILITEK_HSD, "amazon,crown-ili9881-hsd-wxga",
+	  &ili9881_crown_hsd_desc },
+	{ JD936X_ID_ILITEK_BOE, "amazon,crown-ili9881-boe-wxga",
+	  &ili9881_crown_boe_desc },
+	{ JD936X_ID_PROTO_INX, "amazon,crown-jd936x-proto-inx-wxga",
+	  &jd936x_crown_proto_inx_desc },
+	{ JD936X_ID_PROTO_KD_HSD, "amazon,crown-jd936x-proto-kd-hsd-wxga",
+	  &jd936x_crown_proto_kd_hsd_desc },
+	{ JD936X_ID_PROTO_KD_INX, "amazon,crown-jd936x-proto-kd-inx-wxga",
+	  &jd936x_crown_proto_kd_inx_desc },
+};
+
 static int jd936x_push_table(struct mipi_dsi_device *dsi,
 			     const struct jd936x_init_cmd *table,
 			     unsigned int len)
@@ -2239,6 +2280,66 @@ static int jd936x_hw_init(struct udevice *dev)
 	return jd936x_set_backlight(dev, 100);
 }
 
+static int jd936x_detect(struct udevice *dev)
+{
+	struct mipi_dsi_panel_plat *plat = dev_get_plat(dev);
+	struct jd936x_priv *priv = dev_get_priv(dev);
+	const struct jd936x_panel_desc *prev = priv->desc;
+	static bool detected = false;
+	const char *compatible = NULL;
+	u8 id = JD936X_ID_UNKNOWN;
+	unsigned int i;
+	int ret;
+
+	if (detected)
+		return 0;
+
+	if (!plat->device)
+		return -1;
+
+	ret = mipi_dsi_set_maximum_return_packet_size(plat->device, 1);
+	if (ret < 0) {
+		log_err("cannot set return packet size (%d)\n", ret);
+		return ret;
+	}
+
+	ret = mipi_dsi_dcs_read(plat->device, JD936X_ID_CMD, &id, 1);
+	if (ret < 0) {
+		log_err("panel id read failed (%d)\n", ret);
+		return ret;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(jd936x_variants); i++) {
+		if (jd936x_variants[i].id != id)
+			continue;
+
+		priv->desc = jd936x_variants[i].desc;
+		compatible = jd936x_variants[i].compatible;
+		break;
+	}
+
+	/* Publish the panels compatible to pass to Linux later. */
+	if (env_set("panel", compatible))
+		log_warning("cannot publish panel_compatible\n");
+
+	if (!compatible) {
+		log_err("unknown panel id 0x%02x\n", id);
+		return -1;
+	}
+
+	log_info("panel id 0x%02x, %s\n", id, compatible);
+	detected = true;
+
+	if (priv->desc == prev)
+		return 0;
+
+	plat->mode_flags = priv->desc->mode_flags;
+	plat->device->mode_flags = plat->mode_flags;
+
+	/* Indicate that the timing parameters have changed. */
+	return 1;
+}
+
 static int jd936x_probe(struct udevice *dev)
 {
 	struct mipi_dsi_panel_plat *plat = dev_get_plat(dev);
@@ -2264,6 +2365,7 @@ static int jd936x_probe(struct udevice *dev)
 }
 
 static const struct panel_ops jd936x_ops = {
+	.detect			= jd936x_detect,
 	.enable_backlight	= jd936x_enable_backlight,
 	.set_backlight		= jd936x_set_backlight,
 	.get_display_timing	= jd936x_timings,
