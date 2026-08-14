@@ -211,7 +211,7 @@ static int mtk_video_probe(struct udevice *dev)
 	mtk_mutex_add_comp(mtx, nodes[i].comp_id);
 	mtk_mutex_enable(mtx);
 
-	mtk_mutex_acquire(mtx);
+	// mtk_mutex_acquire(mtx);
 	for (i = 0; i < route_count; i++) {
 		if (nodes[i].funcs && nodes[i].funcs->config)
 			nodes[i].funcs->config(nodes[i].dev, &timing);
@@ -223,7 +223,7 @@ static int mtk_video_probe(struct udevice *dev)
 	for (i = 0; i < route_count; i++)
 		if (nodes[i].funcs && nodes[i].funcs->start)
 			nodes[i].funcs->start(nodes[i].dev);
-	mtk_mutex_release(mtx);
+	// mtk_mutex_release(mtx);
 
 	return 0;
 }
