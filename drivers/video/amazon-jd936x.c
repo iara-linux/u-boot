@@ -2110,23 +2110,23 @@ JD936X_DESC(ili9881_crown_boe, ili9881_crown_boe_timing,
 	    JD936X_MODE_FLAGS);
 
 static const struct jd936x_variant jd936x_variants[] = {
-	{ JD936X_ID_INX, "amazon,crown-jd936x-inx-wxga",
+	{ JD936X_ID_INX, "amazon,crown-jd9365-inx-wxga",
 	  &jd936x_crown_inx_desc },
-	{ JD936X_ID_KD_INX, "amazon,crown-jd936x-kd-inx-wxga",
+	{ JD936X_ID_KD_INX, "amazon,crown-jd9365-kd-inx-wxga",
 	  &jd936x_crown_kd_inx_desc },
-	{ JD936X_ID_KD_HSD, "amazon,crown-jd936x-kd-hsd-wxga",
+	{ JD936X_ID_KD_HSD, "amazon,crown-jd9365-kd-hsd-wxga",
 	  &jd936x_crown_kd_hsd_desc },
-	{ JD936X_ID_BOE, "amazon,crown-jd936x-boe-wxga",
+	{ JD936X_ID_BOE, "amazon,crown-jd9365-boe-wxga",
 	  &jd936x_crown_boe_desc },
 	{ JD936X_ID_ILITEK_HSD, "amazon,crown-ili9881-hsd-wxga",
 	  &ili9881_crown_hsd_desc },
 	{ JD936X_ID_ILITEK_BOE, "amazon,crown-ili9881-boe-wxga",
 	  &ili9881_crown_boe_desc },
-	{ JD936X_ID_PROTO_INX, "amazon,crown-jd936x-proto-inx-wxga",
+	{ JD936X_ID_PROTO_INX, "amazon,crown-jd9365-proto-inx-wxga",
 	  &jd936x_crown_proto_inx_desc },
-	{ JD936X_ID_PROTO_KD_HSD, "amazon,crown-jd936x-proto-kd-hsd-wxga",
+	{ JD936X_ID_PROTO_KD_HSD, "amazon,crown-jd9365-proto-kd-hsd-wxga",
 	  &jd936x_crown_proto_kd_hsd_desc },
-	{ JD936X_ID_PROTO_KD_INX, "amazon,crown-jd936x-proto-kd-inx-wxga",
+	{ JD936X_ID_PROTO_KD_INX, "amazon,crown-jd9365-proto-kd-inx-wxga",
 	  &jd936x_crown_proto_kd_inx_desc },
 };
 
@@ -2373,25 +2373,25 @@ static const struct panel_ops jd936x_ops = {
 
 static const struct udevice_id jd936x_ids[] = {
 	{
-		.compatible = "amazon,crown-jd936x-inx-wxga",
+		.compatible = "amazon,crown-jd9365-inx-wxga",
 		.data = (ulong)&jd936x_crown_inx_desc,
 	}, {
-		.compatible = "amazon,crown-jd936x-kd-inx-wxga",
+		.compatible = "amazon,crown-jd9365-kd-inx-wxga",
 		.data = (ulong)&jd936x_crown_kd_inx_desc,
 	}, {
-		.compatible = "amazon,crown-jd936x-kd-hsd-wxga",
+		.compatible = "amazon,crown-jd9365-kd-hsd-wxga",
 		.data = (ulong)&jd936x_crown_kd_hsd_desc,
 	}, {
-		.compatible = "amazon,crown-jd936x-boe-wxga",
+		.compatible = "amazon,crown-jd9365-boe-wxga",
 		.data = (ulong)&jd936x_crown_boe_desc,
 	}, {
-		.compatible = "amazon,crown-jd936x-proto-inx-wxga",
+		.compatible = "amazon,crown-jd9365-proto-inx-wxga",
 		.data = (ulong)&jd936x_crown_proto_inx_desc,
 	}, {
-		.compatible = "amazon,crown-jd936x-proto-kd-inx-wxga",
+		.compatible = "amazon,crown-jd9365-proto-kd-inx-wxga",
 		.data = (ulong)&jd936x_crown_proto_kd_inx_desc,
 	}, {
-		.compatible = "amazon,crown-jd936x-proto-kd-hsd-wxga",
+		.compatible = "amazon,crown-jd9365-proto-kd-hsd-wxga",
 		.data = (ulong)&jd936x_crown_proto_kd_hsd_desc,
 	}, {
 		.compatible = "amazon,crown-ili9881-hsd-wxga",
