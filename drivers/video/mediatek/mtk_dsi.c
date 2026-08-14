@@ -628,18 +628,21 @@ err_refcount:
 	return ret;
 }
 
-static void mtk_dsi_poweroff(struct mtk_dsi *dsi)
+static void mtk_dsi_poweroff(struct mtk_dsi *dsi, bool stop)
 {
-	/*
-	 * mtk_dsi_stop() and mtk_dsi_start() is asymmetric, since
-	 * mtk_dsi_stop() should be called after mtk_crtc_atomic_disable(),
-	 * which needs irq for vblank, and mtk_dsi_stop() will disable irq.
-	 * mtk_dsi_start() needs to be called in mtk_output_dsi_enable(),
-	 * after dsi is fully set.
-	 */
-	mtk_dsi_stop(dsi);
+	if (stop) {
+		/*
+		 * mtk_dsi_stop() and mtk_dsi_start() is asymmetric, since
+		 * mtk_dsi_stop() should be called after mtk_crtc_atomic_disable(),
+		 * which needs irq for vblank, and mtk_dsi_stop() will disable irq.
+		 * mtk_dsi_start() needs to be called in mtk_output_dsi_enable(),
+		 * after dsi is fully set.
+		 */
+		mtk_dsi_stop(dsi);
 
-	mtk_dsi_switch_to_cmd_mode(dsi, VM_DONE_INT_FLAG, 500);
+		mtk_dsi_switch_to_cmd_mode(dsi, VM_DONE_INT_FLAG, 500);
+	}
+
 	mtk_dsi_reset_engine(dsi);
 	mtk_dsi_lane0_ulp_mode_enter(dsi);
 	mtk_dsi_clk_ulp_mode_enter(dsi);
@@ -665,8 +668,33 @@ static void mtk_output_dsi_enable(struct mtk_dsi *dsi)
 void mtk_dsi_ddp_start(struct udevice *dev)
 {
 	struct mtk_dsi *dsi = dev_get_priv(dev);
+	int ret;
 
 	mtk_dsi_poweron(dsi);
+
+	/*
+	 * On some devices, the only way to detect a panel is to send a
+	 * DCS command (i.e. to read a vendor ID). We cannot do that unless
+	 * the link is up, so we defer panel detection until the link IS up
+	 * (after calling mtk_dsi_poweron), then call the panels detect op.
+	 * If the panel reports a change, then we must power down the host,
+	 * and restart it with the new timing parameters.
+	 */
+	if (panel_detect(dsi->panel) > 0) {
+		struct mipi_dsi_panel_plat *plat = dev_get_plat(dsi->panel);
+
+		mtk_dsi_poweroff(dsi, false);
+
+		/* Re-attach with new parameters. */
+		ret = mipi_dsi_attach(plat->device);
+		if (ret) {
+			log_warning("failed to re-attach panel.\n");
+			return;
+		}
+		panel_get_display_timing(dsi->panel, &dsi->timing);
+
+		mtk_dsi_poweron(dsi);
+	}
 
 	panel_enable_backlight(dsi->panel);
 
@@ -677,7 +705,7 @@ void mtk_dsi_ddp_stop(struct udevice *dev)
 {
 	struct mtk_dsi *dsi = dev_get_priv(dev);
 
-	mtk_dsi_poweroff(dsi);
+	mtk_dsi_poweroff(dsi, true);
 }
 
 static u32 mtk_dsi_recv_cnt(u8 type, u8 *read_data)
