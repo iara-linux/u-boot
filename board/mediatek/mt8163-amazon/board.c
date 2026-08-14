@@ -3,12 +3,14 @@
  * Copyright (c) 2026 Ben Grisdale <bengris32@protonmail.ch>
  */
 
+#include <bootm.h>
 #include <config.h>
 #include <dm.h>
 #include <env.h>
 #include <init.h>
 #include <asm/global_data.h>
 #include <lmb.h>
+#include <video.h>
 #include <linux/io.h>
 #include <linux/sizes.h>
 #include <asm/arch/misc.h>
@@ -188,6 +190,83 @@ int board_late_init(void)
 	allocate_lmb_buffers();
 	set_device_info();
 
+	return 0;
+}
+#endif
+
+#if CONFIG_IS_ENABLED(VIDEO)
+
+#ifdef CONFIG_OF_BOARD_SETUP
+static const char *panel_compatibles[] = {
+#ifdef CONFIG_VIDEO_LCD_AMAZON_JD936X
+	"amazon,crown-jd9365",
+	"amazon,crown-ili9881",
+#endif
+#ifdef CONFIG_VIDEO_LCD_AMAZON_ST7701S
+	"amazon,checkers-st7701s",
+	"amazon,cronos-st7701s",
+	"amazon,cronos-gc9503np",
+#endif
+};
+
+static int fdt_fixup_panel_node(void *blob)
+{
+	const char *new_panel_compat, *match_generic;
+	int offset, ret;
+	u32 i;
+
+	new_panel_compat = env_get("panel");
+	if (!new_panel_compat)
+		return -1;
+
+	for (i = 0; i < ARRAY_SIZE(panel_compatibles); i++) {
+		offset = fdt_node_offset_by_compatible(blob, -1, panel_compatibles[i]);
+		if (offset > 0) {
+			match_generic = panel_compatibles[i];
+			break;
+		}
+	}
+
+	if (offset < 0) {
+		printf("failed to find panel node by compatible, skipping\n");
+		return 0;
+	}
+
+	ret = fdt_setprop_string(blob, offset, "compatible", new_panel_compat);
+	if (ret < 0) {
+		printf("failed to update panel compatible: %d\n", ret);
+		return -1;
+	}
+
+	ret = fdt_appendprop_string(blob, offset, "compatible", match_generic);
+	if (ret < 0) {
+		printf("failed to append panel compatible: %d\n", ret);
+		return -1;
+	}
+
+	/* Now we can set status = "okay" on it. */
+	ret = fdt_status_okay(blob, offset);
+	if (ret < 0) {
+		printf("Failed to set status okay on panel node: %d.\n", ret);
+		return -1;
+	}
+
+	return 0;
+}
+#endif /* CONFIG_OF_BOARD_SETUP */
+#endif /* CONFIG_IS_ENABLED(VIDEO) */
+
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, struct bd_info *bd)
+{
+	int ret;
+	(void)ret;
+
+#if CONFIG_IS_ENABLED(VIDEO)
+	ret = fdt_fixup_panel_node(blob);
+	if (ret)
+		return ret;
+#endif
 	return 0;
 }
 #endif
