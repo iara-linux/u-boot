@@ -5,7 +5,9 @@
 
 #include <backlight.h>
 #include <dm.h>
+#include <env.h>
 #include <log.h>
+#include <mipi_display.h>
 #include <mipi_dsi.h>
 #include <panel.h>
 #include <linux/delay.h>
@@ -27,11 +29,41 @@ struct st7701s_init_cmd {
 	u8 params[ST7701S_MAX_PARAMS];
 };
 
+#define ST7701S_ID_LEN			3
+#define ST7701S_ID_BYTE			0
+#define ST7701S_ID_NONE			0xff
+
+/* checkers */
+#define ST7701S_ID_PROTOKD		0x00
+#define ST7701S_ID_KD_CTP		0x01
+#define ST7701S_ID_INX			0x02
+
+/* cronos */
+#define ST7701S_ID_KD_BOE		0x02
+#define GC9503NP_ID_KD_BOE		0x06
+
+/* shared ids */
+#define ST7701S_ID_TRULY		0x03
+#define ST7701S_ID_KD_INX		0x04
+#define ST7701S_ID_KD_HSD		0x05
+
+enum st7701s_board {
+	ST7701S_BOARD_CHECKERS,
+	ST7701S_BOARD_CRONOS,
+};
+
 struct st7701s_panel_desc {
 	const struct st7701s_init_cmd *init;
 	unsigned int init_len;
 	const struct display_timing *timing;
 	unsigned long mode_flags;
+	enum st7701s_board board;
+};
+
+struct st7701s_variant {
+	u8 id;
+	const char *compatible;
+	const struct st7701s_panel_desc *desc;
 };
 
 struct st7701s_priv {
@@ -575,6 +607,7 @@ static const struct st7701s_panel_desc st7701s_checkers_truly_desc = {
 	.init_len = ARRAY_SIZE(st7701s_checkers_truly_init),
 	.timing = &st7701s_checkers_truly_timing,
 	.mode_flags = ST7701S_MODE_FLAGS | MIPI_DSI_CLOCK_NON_CONTINUOUS,
+	.board = ST7701S_BOARD_CHECKERS,
 };
 
 static const struct st7701s_panel_desc st7701s_checkers_kd_ctp_desc = {
@@ -582,6 +615,7 @@ static const struct st7701s_panel_desc st7701s_checkers_kd_ctp_desc = {
 	.init_len = ARRAY_SIZE(st7701s_checkers_kd_ctp_init),
 	.timing = &st7701s_checkers_kd_ctp_timing,
 	.mode_flags = ST7701S_MODE_FLAGS,
+	.board = ST7701S_BOARD_CHECKERS,
 };
 
 static const struct st7701s_panel_desc st7701s_checkers_kd_inx_desc = {
@@ -589,6 +623,7 @@ static const struct st7701s_panel_desc st7701s_checkers_kd_inx_desc = {
 	.init_len = ARRAY_SIZE(st7701s_checkers_kd_inx_init),
 	.timing = &st7701s_checkers_kd_inx_timing,
 	.mode_flags = ST7701S_MODE_FLAGS,
+	.board = ST7701S_BOARD_CHECKERS,
 };
 
 static const struct st7701s_panel_desc st7701s_checkers_kd_hsd_desc = {
@@ -596,6 +631,7 @@ static const struct st7701s_panel_desc st7701s_checkers_kd_hsd_desc = {
 	.init_len = ARRAY_SIZE(st7701s_checkers_kd_hsd_init),
 	.timing = &st7701s_checkers_kd_hsd_timing,
 	.mode_flags = ST7701S_MODE_FLAGS,
+	.board = ST7701S_BOARD_CHECKERS,
 };
 
 static const struct st7701s_panel_desc st7701s_checkers_protokd_desc = {
@@ -603,6 +639,7 @@ static const struct st7701s_panel_desc st7701s_checkers_protokd_desc = {
 	.init_len = ARRAY_SIZE(st7701s_checkers_protokd_init),
 	.timing = &st7701s_checkers_protokd_timing,
 	.mode_flags = ST7701S_MODE_FLAGS,
+	.board = ST7701S_BOARD_CHECKERS,
 };
 
 static const struct st7701s_panel_desc st7701s_cronos_truly_desc = {
@@ -610,6 +647,7 @@ static const struct st7701s_panel_desc st7701s_cronos_truly_desc = {
 	.init_len = ARRAY_SIZE(st7701s_cronos_truly_init),
 	.timing = &st7701s_cronos_timing,
 	.mode_flags = ST7701S_MODE_FLAGS | MIPI_DSI_CLOCK_NON_CONTINUOUS,
+	.board = ST7701S_BOARD_CRONOS,
 };
 
 static const struct st7701s_panel_desc st7701s_cronos_kd_inx_desc = {
@@ -617,6 +655,7 @@ static const struct st7701s_panel_desc st7701s_cronos_kd_inx_desc = {
 	.init_len = ARRAY_SIZE(st7701s_cronos_kd_inx_init),
 	.timing = &st7701s_cronos_timing,
 	.mode_flags = ST7701S_MODE_FLAGS,
+	.board = ST7701S_BOARD_CRONOS,
 };
 
 static const struct st7701s_panel_desc st7701s_cronos_kd_hsd_desc = {
@@ -624,6 +663,7 @@ static const struct st7701s_panel_desc st7701s_cronos_kd_hsd_desc = {
 	.init_len = ARRAY_SIZE(st7701s_cronos_kd_hsd_init),
 	.timing = &st7701s_cronos_timing,
 	.mode_flags = ST7701S_MODE_FLAGS,
+	.board = ST7701S_BOARD_CRONOS,
 };
 
 static const struct st7701s_panel_desc st7701s_cronos_kd_boe_desc = {
@@ -631,6 +671,7 @@ static const struct st7701s_panel_desc st7701s_cronos_kd_boe_desc = {
 	.init_len = ARRAY_SIZE(st7701s_cronos_kd_boe_init),
 	.timing = &st7701s_cronos_timing,
 	.mode_flags = ST7701S_MODE_FLAGS | MIPI_DSI_CLOCK_NON_CONTINUOUS,
+	.board = ST7701S_BOARD_CRONOS,
 };
 
 static const struct st7701s_panel_desc gc9503np_cronos_kd_boe_desc = {
@@ -638,6 +679,7 @@ static const struct st7701s_panel_desc gc9503np_cronos_kd_boe_desc = {
 	.init_len = ARRAY_SIZE(gc9503np_cronos_kd_boe_init),
 	.timing = &gc9503np_cronos_kd_boe_timing,
 	.mode_flags = ST7701S_MODE_FLAGS | MIPI_DSI_CLOCK_NON_CONTINUOUS,
+	.board = ST7701S_BOARD_CRONOS,
 };
 
 static const struct st7701s_panel_desc st7701s_checkers_inx_desc = {
@@ -645,6 +687,35 @@ static const struct st7701s_panel_desc st7701s_checkers_inx_desc = {
 	.init_len = ARRAY_SIZE(st7701s_checkers_inx_init),
 	.timing = &st7701s_checkers_inx_timing,
 	.mode_flags = ST7701S_MODE_FLAGS | MIPI_DSI_CLOCK_NON_CONTINUOUS,
+	.board = ST7701S_BOARD_CHECKERS,
+};
+
+static const struct st7701s_variant st7701s_checkers_variants[] = {
+	{ ST7701S_ID_PROTOKD, "amazon,checkers-st7701s-protokd-wsvga",
+	  &st7701s_checkers_protokd_desc },
+	{ ST7701S_ID_KD_CTP, "amazon,checkers-st7701s-kd-ctp-wsvga",
+	  &st7701s_checkers_kd_ctp_desc },
+	{ ST7701S_ID_INX, "amazon,checkers-st7701s-inx-wsvga",
+	  &st7701s_checkers_inx_desc },
+	{ ST7701S_ID_TRULY, "amazon,checkers-st7701s-truly-wsvga",
+	  &st7701s_checkers_truly_desc },
+	{ ST7701S_ID_KD_INX, "amazon,checkers-st7701s-kd-inx-wsvga",
+	  &st7701s_checkers_kd_inx_desc },
+	{ ST7701S_ID_KD_HSD, "amazon,checkers-st7701s-kd-hsd-wsvga",
+	  &st7701s_checkers_kd_hsd_desc },
+};
+
+static const struct st7701s_variant st7701s_cronos_variants[] = {
+	{ ST7701S_ID_KD_BOE, "amazon,cronos-st7701s-kd-boe-wsvga",
+	  &st7701s_cronos_kd_boe_desc },
+	{ ST7701S_ID_TRULY, "amazon,cronos-st7701s-truly-wsvga",
+	  &st7701s_cronos_truly_desc },
+	{ ST7701S_ID_KD_INX, "amazon,cronos-st7701s-kd-inx-wsvga",
+	  &st7701s_cronos_kd_inx_desc },
+	{ ST7701S_ID_KD_HSD, "amazon,cronos-st7701s-kd-hsd-wsvga",
+	  &st7701s_cronos_kd_hsd_desc },
+	{ GC9503NP_ID_KD_BOE, "amazon,cronos-gc9503np-kd-boe-wsvga",
+	  &gc9503np_cronos_kd_boe_desc },
 };
 
 static int st7701s_push_table(struct mipi_dsi_device *dsi,
@@ -784,6 +855,85 @@ static int st7701s_hw_init(struct udevice *dev)
 	return st7701s_set_backlight(dev, 100);
 }
 
+static int st7701s_detect(struct udevice *dev)
+{
+	struct mipi_dsi_panel_plat *plat = dev_get_plat(dev);
+	struct st7701s_priv *priv = dev_get_priv(dev);
+	const struct st7701s_panel_desc *prev = priv->desc;
+	const struct st7701s_variant *variants;
+	static bool detected = false;
+	const char *compatible = NULL;
+	u8 id[ST7701S_ID_LEN] = { };
+	unsigned int i, count;
+	int ret;
+	u8 vendor;
+
+	if (detected)
+		return 0;
+
+	if (!plat->device)
+		return -1;
+
+	if (priv->desc->board == ST7701S_BOARD_CRONOS) {
+		variants = st7701s_cronos_variants;
+		count = ARRAY_SIZE(st7701s_cronos_variants);
+	} else {
+		variants = st7701s_checkers_variants;
+		count = ARRAY_SIZE(st7701s_checkers_variants);
+	}
+
+	ret = mipi_dsi_set_maximum_return_packet_size(plat->device, sizeof(id));
+	if (ret < 0) {
+		log_err("cannot set return packet size (%d)\n", ret);
+		return ret;
+	}
+
+	ret = mipi_dsi_dcs_read(plat->device, MIPI_DCS_GET_DISPLAY_ID, id,
+				sizeof(id));
+	if (ret < 0) {
+		log_err("panel id read failed (%d)\n", ret);
+		return ret;
+	}
+
+	vendor = id[ST7701S_ID_BYTE];
+	if (vendor == ST7701S_ID_NONE) {
+		log_err("read invalid panel id\n");
+		return -1;
+	}
+
+	for (i = 0; i < count; i++) {
+		if (variants[i].id != vendor)
+			continue;
+
+		priv->desc = variants[i].desc;
+		compatible = variants[i].compatible;
+		break;
+	}
+
+	/* Publish the panels compatible to pass to Linux later. */
+	if (env_set("panel", compatible))
+		log_warning("cannot publish panel_compatible\n");
+
+	if (!compatible) {
+		log_err("unknown panel, da %02x db %02x dc %02x\n",
+			id[0], id[1], id[2]);
+		return -1;
+	}
+
+	log_info("panel da %02x db %02x dc %02x, %s\n", id[0], id[1], id[2],
+		 compatible);
+	detected = true;
+
+	if (priv->desc == prev)
+		return 0;
+
+	plat->mode_flags = priv->desc->mode_flags;
+	plat->device->mode_flags = plat->mode_flags;
+
+	/* Indicate that the timing parameters have changed. */
+	return 1;
+}
+
 static int st7701s_probe(struct udevice *dev)
 {
 	struct mipi_dsi_panel_plat *plat = dev_get_plat(dev);
@@ -809,6 +959,7 @@ static int st7701s_probe(struct udevice *dev)
 }
 
 static const struct panel_ops st7701s_ops = {
+	.detect			= st7701s_detect,
 	.enable_backlight	= st7701s_enable_backlight,
 	.set_backlight		= st7701s_set_backlight,
 	.get_display_timing	= st7701s_timings,
