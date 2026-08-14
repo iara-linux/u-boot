@@ -70,6 +70,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define GOODIX_GT1X_REG_CONFIG_DATA		0x8050
 #define GOODIX_GT9X_REG_CONFIG_DATA		0x8047
 #define GOODIX_REG_ID				0x8140
+#define GOODIX_REG_SENSOR_ID			0x814A
 #define GOODIX_READ_COOR_ADDR			0x814E
 #define GOODIX_REG_BAK_REF			0x99D0
 
@@ -83,6 +84,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define GOODIX_CONTACT_SIZE		8
 #define GOODIX_MAX_CONTACT_SIZE		9
 #define GOODIX_MAX_CONTACTS		10
+
+#define GOODIX_MAX_CFG_GROUPS		6
 
 #define GOODIX_CONFIG_MIN_LENGTH	186
 #define GOODIX_CONFIG_911_LENGTH	186
@@ -362,6 +365,57 @@ static int goodix_stop(struct udevice *dev)
 	return 0;
 }
 
+static int goodix_send_cfg(struct goodix_priv *ts)
+{
+	char prop[sizeof("goodix,cfg-group0")];
+	int len, i, raw_len, ret;
+	u8 sensor_id, sum = 0;
+	const u8 *cfg;
+
+	ret = goodix_i2c_read(ts, GOODIX_REG_SENSOR_ID, &sensor_id, 1);
+	if (ret)
+		return ret;
+
+	if (sensor_id >= GOODIX_MAX_CFG_GROUPS) {
+		dev_dbg(ts->dev, "no config for sensor id %u\n", sensor_id);
+		return 0;
+	}
+
+	snprintf(prop, sizeof(prop), "goodix,cfg-group%u", sensor_id);
+
+	/* if there is no config, skip download */
+	cfg = dev_read_prop(ts->dev, prop, &len);
+	if (!cfg)
+		return 0;
+
+	if (len < GOODIX_CONFIG_MIN_LENGTH || len > GOODIX_CONFIG_MAX_LENGTH) {
+		dev_err(ts->dev, "%s is %d bytes\n", prop, len);
+		return -EINVAL;
+	}
+
+	/* checksum the config, fail if it doesn't match */
+	raw_len = len - 2;
+	for (i = 0; i < raw_len; i++)
+		sum += cfg[i];
+
+	if ((u8)(~sum + 1) != cfg[raw_len] || cfg[raw_len + 1] != 1) {
+		dev_err(ts->dev, "%s fails its own checksum\n", prop);
+		return -EINVAL;
+	}
+
+	ret = goodix_i2c_write(ts, ts->chip->config_addr, cfg, len);
+	if (ret)
+		return ret;
+
+	debug("%s: sent %s, %d bytes\n", __func__, prop, len);
+
+	/* wait for config to apply */
+	udelay(10 * 1000);
+
+	dev_info(ts->dev, "sent config for sensor id %u\n", sensor_id);
+	return 0;
+}
+
 static int goodix_probe(struct udevice *dev)
 {
 	struct touchpanel_priv *uc_priv = dev_get_uclass_priv(dev);
@@ -452,6 +506,12 @@ static int goodix_probe(struct udevice *dev)
 
 	ts->id[GOODIX_ID_MAX_LEN] = 0;
 	ts->chip = goodix_get_chip_data(ts->id);
+
+	/* Download config if provided before it gets read back. */
+
+	ret = goodix_send_cfg(ts);
+	if (ret)
+		return ret;
 
 	/* Read configuration and apply touchscreen parameters */
 
