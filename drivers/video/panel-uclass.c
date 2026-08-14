@@ -80,6 +80,16 @@ int panel_get_display_timing(struct udevice *dev,
 	return 0;
 }
 
+int panel_detect(struct udevice *dev)
+{
+	struct panel_ops *ops = panel_get_ops(dev);
+
+	if (!ops->detect)
+		return 0;
+
+	return ops->detect(dev);
+}
+
 UCLASS_DRIVER(panel) = {
 	.id		= UCLASS_PANEL,
 	.name		= "panel",

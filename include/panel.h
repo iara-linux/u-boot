@@ -103,6 +103,18 @@ struct panel_ops {
 	 */
 	int (*get_modes)(struct udevice *dev,
 			 const struct drm_display_mode **modes);
+
+	/**
+	 * detect() - Detect the attached panel
+	 *
+	 * Returns 1 if panel timing parameters will change after detecting
+	 * a different panel. Host driver should re-start the host with the
+	 * new timing parameters. Otherwise, 0 is returned for no change.
+	 *
+	 * @dev:	Panel device
+	 * @return 1 if timing parameters changed, 0 if not, -ve on error
+	 */
+	int (*detect)(struct udevice *dev);
 };
 
 #define panel_get_ops(dev)	((struct panel_ops *)(dev)->driver->ops)
@@ -134,5 +146,13 @@ int panel_set_backlight(struct udevice *dev, int percent);
  */
 int panel_get_display_timing(struct udevice *dev,
 			     struct display_timing *timing);
+
+/**
+ * panel_detect() - Detect the attached panel.
+ *
+ * @dev:	Panel device
+ * @return 1 if timing parameters changed, 0 if not, -ve on error
+ */
+int panel_detect(struct udevice *dev);
 
 #endif
