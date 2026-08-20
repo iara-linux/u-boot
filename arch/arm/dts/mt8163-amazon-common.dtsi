@@ -32,6 +32,28 @@
 			reg = <0 0x43000000 0 0x30000>;
 			no-map;
 		};
+
+		spm_pcm_reserved: spm-pcm@43030000 {
+			reg = <0 0x43030000 0 0x4000>;
+			no-map;
+		};
+
+		optee_reserved: optee@43200000 {
+			reg = <0 0x43200000 0 0x400000>;
+			no-map;
+		};
+
+		optee_shm_reserved: optee-shm@43600000 {
+			reg = <0 0x43600000 0 0x200000>;
+			no-map;
+		};
+	};
+
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
 	};
 };
 
