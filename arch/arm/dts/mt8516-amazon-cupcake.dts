@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+/*
+ * Copyright (C) 2019 BayLibre SAS.
+ * Author: Fabien Parent <fparent@baylibre.com>
+ * Copyright (c) 2026 Ben Grisdale <bengris32@protonmail.ch>
+ */
+
+/dts-v1/;
+
+#include "mt8516-amazon-common.dtsi"
+
+/ {
+	model = "Amazon Echo Input (2018)";
+	compatible = "amazon,cupcake", "mediatek,mt8516";
+	chassis-type = "embedded";
+};
