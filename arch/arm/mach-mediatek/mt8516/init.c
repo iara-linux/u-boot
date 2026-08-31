@@ -21,7 +21,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-int dram_init(void)
+__weak int dram_init(void)
 {
 	int ret;
 
