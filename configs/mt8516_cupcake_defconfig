@@ -1,0 +1,4 @@
+#include <configs/mt8516-amazon.config>
+CONFIG_ENV_SOURCE_FILE="env/cupcake"
+CONFIG_DEFAULT_DEVICE_TREE="mt8516-amazon-cupcake"
+CONFIG_OF_LIST="mt8516-amazon-cupcake"
