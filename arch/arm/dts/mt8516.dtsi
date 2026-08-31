@@ -49,6 +49,15 @@
 		};
 	};
 
+	clocks {
+		clk26m: oscillator-26m {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <26000000>;
+			clock-output-names = "clk26m";
+		};
+	};
+
 	topckgen: clock-controller@10000000 {
 		compatible = "mediatek,mt8516-topckgen";
 		reg = <0x10000000 0x1000>;
@@ -142,7 +151,7 @@
 		reg = <0x11005000 0x1000>;
 		reg-shift = <2>;
 		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_LOW>;
-		clocks = <&topckgen CLK_TOP_UART0_SEL>,
+		clocks = <&clk26m>,
 			 <&topckgen_cg CLK_TOP_UART0>;
 		clock-names = "baud","bus";
 		status = "disabled";
