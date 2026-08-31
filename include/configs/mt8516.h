@@ -9,6 +9,7 @@
 #ifndef __MT8516_H
 #define __MT8516_H
 
+#if 0
 #include <linux/sizes.h>
 
 #define CFG_SYS_NS16550_COM1		0x11005000
@@ -23,5 +24,8 @@
 #define CFG_EXTRA_ENV_SETTINGS \
 	"scriptaddr=0x40000000\0" \
 	BOOTENV
+#else
+#define CFG_SYS_SDRAM_BASE 0x40000000
+#endif
 
 #endif
