@@ -9,20 +9,30 @@
 #include <env.h>
 #include <init.h>
 #include <asm/global_data.h>
+#include <asm/io.h>
 #include <lmb.h>
 #include <video.h>
 #include <linux/io.h>
+#include <linux/delay.h>
 #include <linux/sizes.h>
 #include <asm/arch/misc.h>
 
 #include <linux/libfdt.h>
 #include <linux/sizes.h>
+#include <linux/types.h>
 
 #include "preloader.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
 boot_args_t *preloader_param;
+
+#if CONFIG_IS_ENABLED(VIDEO)
+#define MT8163_DISP_OVL0_BASE	0x14007000UL
+#define DISP_REG_OVL_EN		0x000c
+#define DISP_REG_OVL_RST	0x0014
+#define DISP_REG_OVL_SRC_CON	0x002c
+#endif
 
 #ifdef CONFIG_BOARD_LATE_INIT
 #define KERNEL_COMP_SIZE	SZ_64M
@@ -193,6 +203,30 @@ int board_late_init(void)
 	return 0;
 }
 #endif
+
+#if CONFIG_IS_ENABLED(VIDEO)
+static inline void ovl_writel(u32 val, unsigned long off)
+{
+	writel(val, (void __iomem *)(MT8163_DISP_OVL0_BASE + off));
+}
+
+static void ovl_disable(void)
+{
+	ovl_writel(0, DISP_REG_OVL_SRC_CON);
+	ovl_writel(0, DISP_REG_OVL_EN);
+
+	ovl_writel(1, DISP_REG_OVL_RST);
+	udelay(10);
+	ovl_writel(0, DISP_REG_OVL_RST);
+}
+#endif
+
+void board_preboot_os(void)
+{
+#if CONFIG_IS_ENABLED(VIDEO)
+	ovl_disable();
+#endif
+}
 
 #if CONFIG_IS_ENABLED(VIDEO)
 
