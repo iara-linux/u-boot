@@ -94,6 +94,11 @@ config IDMELIB
 	help
 	  idmelib provides API to parse information from Amazon IDME block.
 
+config BCBLIB
+	bool
+	help
+	  bcblib provides API to parse information from Amazon BCB.
+
 config HAVE_PRIVATE_LIBGCC
 	bool
 

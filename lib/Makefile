@@ -33,6 +33,7 @@ endif
 obj-$(CONFIG_CIRCBUF) += circbuf.o
 
 obj-y += crc8.o
+obj-$(CONFIG_BCBLIB) += bcblib.o
 obj-$(CONFIG_IDMELIB) += idmelib.o
 obj-$(CONFIG_ERRNO_STR) += errno_str.o
 obj-$(CONFIG_FIT) += fdtdec_common.o
