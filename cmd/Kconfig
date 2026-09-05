@@ -1133,6 +1133,13 @@ config CMD_ADC
 	  Shows ADC device info and permit printing one-shot analog converted
 	  data from a named Analog to Digital Converter.
 
+config CMD_AMZN_BCB
+	bool "amzn_bcb"
+	select BCBLIB
+	depends on PARTITIONS
+	help
+	  Read/modify/write the Amazon A/B slot metadata.
+
 config CMD_BCB
 	bool "bcb"
 	depends on PARTITIONS
