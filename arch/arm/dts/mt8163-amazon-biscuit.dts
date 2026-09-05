@@ -19,6 +19,12 @@
 	gpio-keys {
 		compatible = "gpio-keys";
 
+		key-uber {
+			label = "Uber";
+			linux,code = <KEY_ASSISTANT>;
+			gpios = <&pio 36 GPIO_ACTIVE_LOW>;
+		};
+
 		key-volume-up {
 			label = "Volume Up";
 			linux,code = <KEY_VOLUMEUP>;
