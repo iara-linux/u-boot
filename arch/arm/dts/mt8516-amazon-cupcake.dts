@@ -7,10 +7,29 @@
 
 /dts-v1/;
 
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
 #include "mt8516-amazon-common.dtsi"
 
 / {
 	model = "Amazon Echo Input (2018)";
 	compatible = "amazon,cupcake", "mediatek,mt8516";
 	chassis-type = "embedded";
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		key-uber {
+			label = "Uber";
+			linux,code = <KEY_ASSISTANT>;
+			gpios = <&gpio 42 GPIO_ACTIVE_LOW>;
+		};
+
+		key-mute {
+			label = "Mute";
+			linux,code = <KEY_MUTE>;
+			gpios = <&gpio 72 GPIO_ACTIVE_HIGH>;
+		};
+	};
 };
