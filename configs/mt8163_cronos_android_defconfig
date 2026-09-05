@@ -1,0 +1,5 @@
+#include <configs/mt8163-amazon-headed-android.config>
+CONFIG_ENV_SOURCE_FILE="env/cronos-android"
+CONFIG_DEFAULT_DEVICE_TREE="mt8163-amazon-cronos"
+CONFIG_OF_LIST="mt8163-amazon-cronos"
+CONFIG_VIDEO_LCD_AMAZON_ST7701S=y

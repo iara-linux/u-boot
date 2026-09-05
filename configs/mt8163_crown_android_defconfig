@@ -1,0 +1,7 @@
+#include <configs/mt8163-amazon-headed-android.config>
+CONFIG_ENV_SOURCE_FILE="env/crown-android"
+CONFIG_DEFAULT_DEVICE_TREE="mt8163-amazon-crown"
+CONFIG_OF_LIST="mt8163-amazon-crown"
+CONFIG_VIDEO_LCD_AMAZON_JD936X=y
+CONFIG_PMIC_TPS65132=y
+CONFIG_DM_REGULATOR_TPS65132=y

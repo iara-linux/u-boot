@@ -1,0 +1,5 @@
+#include <configs/mt8163-amazon-headed-android.config>
+CONFIG_ENV_SOURCE_FILE="env/checkers-android"
+CONFIG_DEFAULT_DEVICE_TREE="mt8163-amazon-checkers"
+CONFIG_OF_LIST="mt8163-amazon-checkers"
+CONFIG_VIDEO_LCD_AMAZON_ST7701S=y

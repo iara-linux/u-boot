@@ -1,0 +1,5 @@
+#include <configs/mt8516-amazon-android.config>
+CONFIG_ENV_SOURCE_FILE="env/cupcake-android"
+CONFIG_DEFAULT_DEVICE_TREE="mt8516-amazon-cupcake"
+CONFIG_OF_LIST="mt8516-amazon-cupcake"
+CONFIG_CMD_AMZN_BCB=y
