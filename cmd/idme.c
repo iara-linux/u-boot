@@ -9,13 +9,17 @@
 #include <blk.h>
 #include <command.h>
 #include <env.h>
+#include <hexdump.h>
+#include <idme.h>
 #include <idmelib.h>
 #include <malloc.h>
 #include <mmc.h>
+#include <net.h>
 #include <vsprintf.h>
 #include <string.h>
 #include <asm/cache.h>
 #include <linux/ctype.h>
+#include <linux/libfdt.h>
 #include <linux/stringify.h>
 #include <linux/types.h>
 
@@ -214,7 +218,7 @@ static int idme_access(void *buf, bool write)
 	return ret;
 }
 
-static struct idme *idme_load(void)
+struct idme *idme_load(void)
 {
 	struct idme *hdr;
 
@@ -238,6 +242,80 @@ fail:
 	free(hdr);
 
 	return NULL;
+}
+
+static const struct {
+	const char *alias;
+	const char *var;
+	const char *prop;
+	bool le;
+} idme_fdt_macs[] = {
+	{ "wifi", IDME_VAR_MAC_ADDR, "local-mac-address", false /* be */ },
+	{ "bluetooth", IDME_VAR_BT_MAC_ADDR, "local-bd-address", true /* le*/ },
+};
+
+static int idme_get_mac(struct idme *hdr, const char *var, u8 *mac)
+{
+	char val[IDME_MAX_NAME_LEN + 1];
+
+	if (idmelib_get_var(hdr, var, val, sizeof(val)))
+		return -ENOENT;
+
+	if (strlen(val) < ARP_HLEN * 2)
+		return -EINVAL;
+
+	if (hex2bin(mac, val, ARP_HLEN))
+		return -EINVAL;
+
+	if (is_zero_ethaddr(mac) || is_multicast_ethaddr(mac))
+		return -EINVAL;
+
+	return 0;
+}
+
+int idme_fdt_fixup_mac_addrs(void *blob)
+{
+	struct idme *hdr = NULL;
+	int i, ret = 0;
+
+	for (i = 0; i < ARRAY_SIZE(idme_fdt_macs); i++) {
+		u8 mac[ARP_HLEN], val[ARP_HLEN];
+		int offset, b;
+
+		offset = fdt_path_offset(blob, idme_fdt_macs[i].alias);
+		if (offset < 0)
+			continue;
+
+		if (!hdr) {
+			hdr = idme_load();
+			if (!hdr)
+				break;
+		}
+
+		if (idme_get_mac(hdr, idme_fdt_macs[i].var, mac)) {
+			printf("idme: could not get %s\n", idme_fdt_macs[i].var);
+			continue;
+		}
+
+		for (b = 0; b < ARP_HLEN; b++)
+			val[b] = idme_fdt_macs[i].le ?
+				 mac[ARP_HLEN - 1 - b] : mac[b];
+
+		ret = fdt_setprop(blob, offset, idme_fdt_macs[i].prop, val,
+				  ARP_HLEN);
+		if (ret < 0) {
+			printf("idme: cannot set %s (%s)\n",
+			       idme_fdt_macs[i].prop, fdt_strerror(ret));
+			break;
+		}
+
+		printf("idme: %s %pM\n", idme_fdt_macs[i].alias, mac);
+		ret = 0;
+	}
+
+	free(hdr);
+
+	return ret;
 }
 
 static void idme_list(struct idme *hdr)
