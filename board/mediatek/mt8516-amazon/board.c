@@ -7,6 +7,7 @@
 #include <config.h>
 #include <dm.h>
 #include <env.h>
+#include <idme.h>
 #include <init.h>
 #include <asm/global_data.h>
 #include <lmb.h>
@@ -207,6 +208,21 @@ int board_late_init(void)
 	allocate_lmb_buffers();
 	set_device_info();
 
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_OF_BOARD_SETUP
+int ft_board_setup(void *blob, struct bd_info *bd)
+{
+	int ret;
+	(void)ret;
+
+#ifdef CONFIG_CMD_IDME
+	ret = idme_fdt_fixup_mac_addrs(blob);
+	if (ret)
+		return ret;
+#endif
 	return 0;
 }
 #endif
