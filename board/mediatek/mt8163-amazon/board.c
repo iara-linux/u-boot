@@ -7,6 +7,7 @@
 #include <config.h>
 #include <dm.h>
 #include <env.h>
+#include <idme.h>
 #include <init.h>
 #include <asm/global_data.h>
 #include <asm/io.h>
@@ -298,6 +299,11 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 
 #if CONFIG_IS_ENABLED(VIDEO)
 	ret = fdt_fixup_panel_node(blob);
+	if (ret)
+		return ret;
+#endif
+#ifdef CONFIG_CMD_IDME
+	ret = idme_fdt_fixup_mac_addrs(blob);
 	if (ret)
 		return ret;
 #endif
