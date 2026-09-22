@@ -222,6 +222,10 @@ int ft_board_setup(void *blob, struct bd_info *bd)
 	ret = idme_fdt_fixup_mac_addrs(blob);
 	if (ret)
 		return ret;
+
+	ret = idme_fdt_fixup_items(blob);
+	if (ret)
+		return ret;
 #endif
 	return 0;
 }

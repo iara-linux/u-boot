@@ -9,6 +9,7 @@
 #include <blk.h>
 #include <command.h>
 #include <env.h>
+#include <fdt_support.h>
 #include <hexdump.h>
 #include <idme.h>
 #include <idmelib.h>
@@ -316,6 +317,78 @@ int idme_fdt_fixup_mac_addrs(void *blob)
 	free(hdr);
 
 	return ret;
+}
+
+int idme_fdt_fixup_items(void *blob)
+{
+	struct idme_item *item;
+	struct idme *hdr;
+	int parent, node, ret = 0;
+	u8 *end;
+	u32 i;
+
+	hdr = idme_load();
+	if (!hdr)
+		return 0;
+
+	parent = fdt_find_or_add_subnode(blob, 0, IDME_FDT_NODE);
+	if (parent < 0) {
+		ret = parent;
+		goto out;
+	}
+
+	end = (u8 *)hdr + IDME_SIZE;
+	item = idmelib_first_item(hdr);
+
+	for (i = 0; i < hdr->items_num; i++) {
+		char name[IDME_MAX_NAME_LEN + 1];
+		size_t len;
+		void *val;
+
+		if (item->data > end ||
+		    item->desc.size > (size_t)(end - item->data) ||
+		    !item->desc.name[0]) {
+			printf("idme: header: %u items, really %u items\n",
+			       hdr->items_num, i);
+			break;
+		}
+
+		memcpy(name, item->desc.name, IDME_MAX_NAME_LEN);
+		name[IDME_MAX_NAME_LEN] = '\0';
+
+		node = fdt_find_or_add_subnode(blob, parent, name);
+		if (node < 0) {
+			ret = node;
+			break;
+		}
+
+		len = strnlen((char *)item->data, item->desc.size);
+		ret = fdt_setprop_placeholder(blob, node, "value", len + 1,
+					      &val);
+		if (ret < 0)
+			break;
+
+		memcpy(val, item->data, len);
+		((char *)val)[len] = '\0';
+
+		ret = fdt_setprop_u32(blob, node, "permission",
+				      item->desc.permission);
+		if (ret < 0)
+			break;
+
+		item = idmelib_item_next(item);
+	}
+
+	if (ret < 0)
+		printf("idme: cannot publish /%s (%s)\n", IDME_FDT_NODE,
+		       fdt_strerror(ret));
+	else
+		printf("idme: %u items under /%s\n", i, IDME_FDT_NODE);
+
+out:
+	free(hdr);
+
+	return ret < 0 ? ret : 0;
 }
 
 static void idme_list(struct idme *hdr)
